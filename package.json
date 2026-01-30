@@ -1,0 +1,31 @@
+{
+  "name": "spec-kit-mcp",
+  "version": "1.0.0",
+  "description": "AI-driven specification platform using MCP (Model Context Protocol) for VS Code & GitHub Copilot",
+  "main": "dist/index.js",
+  "type": "module",
+  "bin": {
+    "spec-kit-mcp": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx watch src/index.ts",
+    "start": "node dist/index.js",
+    "setup": "tsx src/utils/vsCodeConfigGenerator.ts",
+    "test": "tsx src/index.ts"
+  },
+  "keywords": ["mcp", "model-context-protocol", "copilot", "azure-devops", "specifications"],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.25.3",
+    "js-yaml": "^4.1.1",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@types/js-yaml": "^4.0.9",
+    "@types/node": "^25.1.0",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3"
+  }
+}
