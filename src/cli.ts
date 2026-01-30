@@ -34,7 +34,7 @@ function log(message: string, color = colors.reset): void {
 }
 
 function logStep(step: number, message: string): void {
-  console.log(`\n${colors.cyan}[${step}/4]${colors.reset} ${colors.bold}${message}${colors.reset}`);
+  console.log(`\n${colors.cyan}[${step}/5]${colors.reset} ${colors.bold}${message}${colors.reset}`);
 }
 
 async function fileExists(filePath: string): Promise<boolean> {
@@ -100,6 +100,120 @@ async function getVSCodeSettingsPath(): Promise<string | null> {
   }
   
   return settingsPath;
+}
+
+/**
+ * Get the VS Code User directory path
+ */
+function getVSCodeUserPath(): string {
+  const platform = os.platform();
+  if (platform === "win32") {
+    return path.join(os.homedir(), "AppData", "Roaming", "Code", "User");
+  } else if (platform === "darwin") {
+    return path.join(os.homedir(), "Library", "Application Support", "Code", "User");
+  } else {
+    return path.join(os.homedir(), ".config", "Code", "User");
+  }
+}
+
+/**
+ * Detect all VS Code profiles
+ */
+async function detectVSCodeProfiles(): Promise<{ id: string; name: string; mcpPath: string }[]> {
+  const userPath = getVSCodeUserPath();
+  const profilesPath = path.join(userPath, "profiles");
+  const profiles: { id: string; name: string; mcpPath: string }[] = [];
+  
+  // Check for profiles directory
+  if (await fileExists(profilesPath)) {
+    try {
+      const entries = await fs.readdir(profilesPath, { withFileTypes: true });
+      for (const entry of entries) {
+        if (entry.isDirectory()) {
+          const profileId = entry.name;
+          const mcpPath = path.join(profilesPath, profileId, "mcp.json");
+          
+          // Try to get profile name from settings or use ID
+          let profileName = profileId;
+          const settingsPath = path.join(profilesPath, profileId, "settings.json");
+          if (await fileExists(settingsPath)) {
+            try {
+              const content = await fs.readFile(settingsPath, "utf-8");
+              const settings = JSON.parse(content.replace(/\/\/.*$/gm, ""));
+              if (settings["workbench.settings.applyToAllProfiles"]) {
+                profileName = `Profile ${profileId.slice(0, 8)}`;
+              }
+            } catch {
+              // Ignore parse errors
+            }
+          }
+          
+          profiles.push({ id: profileId, name: profileName, mcpPath });
+        }
+      }
+    } catch {
+      // Ignore errors reading profiles
+    }
+  }
+  
+  // Also add the default profile (User level mcp.json)
+  const defaultMcpPath = path.join(userPath, "mcp.json");
+  profiles.unshift({ id: "default", name: "Default", mcpPath: defaultMcpPath });
+  
+  return profiles;
+}
+
+/**
+ * Update MCP configuration in a profile's mcp.json
+ */
+async function updateProfileMcpConfig(mcpPath: string, dryRun: boolean): Promise<boolean> {
+  let config: { servers: Record<string, unknown> } = { servers: {} };
+  
+  // Read existing mcp.json if it exists
+  if (await fileExists(mcpPath)) {
+    try {
+      const content = await fs.readFile(mcpPath, "utf-8");
+      config = JSON.parse(content);
+      if (!config.servers) {
+        config.servers = {};
+      }
+    } catch {
+      config = { servers: {} };
+    }
+  }
+  
+  // Check if spec-kit already configured
+  if (config.servers["spec-kit"]) {
+    return false; // Already configured
+  }
+  
+  // Add spec-kit configuration
+  config.servers["spec-kit"] = {
+    command: "npx",
+    args: ["-y", "smart-spec-kit-mcp"],
+    disabled: false,
+    alwaysAllow: [
+      "speckit_specify",
+      "speckit_plan",
+      "speckit_tasks",
+      "speckit_implement",
+      "speckit_clarify",
+      "speckit_validate",
+      "speckit_memory",
+      "speckit_help",
+      "list_workflows",
+      "start_workflow",
+      "advance_workflow",
+      "get_template"
+    ]
+  };
+  
+  if (!dryRun) {
+    await ensureDir(path.dirname(mcpPath));
+    await fs.writeFile(mcpPath, JSON.stringify(config, null, 2), "utf-8");
+  }
+  
+  return true;
 }
 
 async function updateVSCodeSettings(settingsPath: string): Promise<boolean> {
@@ -271,7 +385,7 @@ ${colors.cyan}╔═════════════════════
     logStep(1, "Prompts MCP (ignoré)");
   }
   
-  // Step 2: Configure VS Code
+  // Step 2: Configure VS Code (settings.json - legacy)
   if (!skipVSCode) {
     logStep(2, "Configuration de VS Code...");
     const settingsPath = await getVSCodeSettingsPath();
@@ -291,8 +405,34 @@ ${colors.cyan}╔═════════════════════
     logStep(2, "VS Code config (ignoré)");
   }
   
-  // Step 3: Update .gitignore
-  logStep(3, "Mise à jour .gitignore...");
+  // Step 3: Configure VS Code profiles (mcp.json)
+  logStep(3, "Configuration des profils VS Code...");
+  const profiles = await detectVSCodeProfiles();
+  
+  if (profiles.length > 0) {
+    let configuredCount = 0;
+    for (const profile of profiles) {
+      if (dryRun) {
+        log(`   📋 Ajouterait spec-kit au profil "${profile.name}"`, colors.yellow);
+      } else {
+        const updated = await updateProfileMcpConfig(profile.mcpPath, false);
+        if (updated) {
+          log(`   ✅ spec-kit ajouté au profil "${profile.name}"`, colors.green);
+          configuredCount++;
+        } else {
+          log(`   ⏭️  spec-kit déjà configuré dans "${profile.name}"`, colors.yellow);
+        }
+      }
+    }
+    if (!dryRun && configuredCount === 0) {
+      log("   ✅ spec-kit déjà configuré dans tous les profils", colors.green);
+    }
+  } else {
+    log("   ℹ️  Aucun profil VS Code détecté", colors.blue);
+  }
+  
+  // Step 4: Update .gitignore
+  logStep(4, "Mise à jour .gitignore...");
   if (dryRun) {
     log("   📋 Ajouterait .spec-kit-sessions/ au .gitignore", colors.yellow);
   } else {
@@ -300,8 +440,8 @@ ${colors.cyan}╔═════════════════════
     log("   ✅ .spec-kit-sessions/ ajouté au .gitignore", colors.green);
   }
   
-  // Step 4: Create .spec-kit directory with templates and constitution
-  logStep(4, "Installation des templates et config...");
+  // Step 5: Create .spec-kit directory with templates and constitution
+  logStep(5, "Installation des templates et config...");
   const specKitDir = path.join(projectPath, ".spec-kit");
   const specsDir = path.join(projectPath, "specs");
   

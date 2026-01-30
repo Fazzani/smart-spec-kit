@@ -5,6 +5,24 @@
 
 Plateforme d'orchestration automatisée pour le **développement piloté par les spécifications** (Spec-Driven Development) via **GitHub Copilot** et **MCP** (Model Context Protocol).
 
+---
+
+## 📚 Table of Contents
+
+- [✨ Fonctionnalités](#-fonctionnalités)
+- [⚡ Installation Rapide](#-installation-rapide)
+- [📁 Structure du Projet](#-structure-du-projet)
+- [🎮 Commandes Disponibles](#-commandes-disponibles)
+- [🚀 Workflow Recommandé](#-workflow-recommandé)
+- [🔧 Personnalisation](#-personnalisation)
+- [❓ Obtenir de l'Aide](#-obtenir-de-laide)
+- [🔗 Intégration Azure DevOps](#-intégration-azure-devops)
+- [📖 Documentation Complète](#-documentation-complète)
+- [🧪 Développement](#-développement)
+- [📄 License](#-license)
+
+---
+
 ## ✨ Fonctionnalités
 
 - **🤖 Commandes Naturelles**: Utilisez `speckit: spec`, `speckit: plan`, etc. directement dans Copilot Chat
@@ -249,14 +267,15 @@ speckit: spec pour le work item #12345
 
 ---
 
-## 🤖 Agents IA
+## 📖 Documentation Complète
 
-| Agent | Rôle | Utilisation |
-|-------|------|-------------|
-| **SpecAgent** | Rédacteur | Spécifications fonctionnelles |
-| **PlanAgent** | Planificateur | Plans d'implémentation |
-| **GovAgent** | Validateur | Conformité RGPD, Sécurité |
-| **TestAgent** | Testeur | Stratégies de tests |
+Pour une documentation détaillée sur tous les outils et fonctionnalités:
+
+- **[QUICK-START.md](QUICK-START.md)** - Guide de démarrage rapide (2 minutes)
+- **[docs/DOCUMENTATION.md](docs/DOCUMENTATION.md)** - Documentation complète des outils MCP et workflows
+- **[docs/PACKAGING.md](docs/PACKAGING.md)** - Guide de packaging et distribution
+- **[PROJECT_CONTEXT.md](PROJECT_CONTEXT.md)** - Contexte du projet Spec-Kit
+- **[TASK_QUEUE.md](TASK_QUEUE.md)** - Tâches en cours et prévues
 
 ---
 
