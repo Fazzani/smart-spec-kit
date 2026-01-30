@@ -13,6 +13,7 @@ When the user mentions **"speckit:"** followed by a command, or uses these keywo
 | `speckit: tasks`, `générer les tâches`, `créer les tâches` | `speckit_tasks` | Generate task breakdown |
 | `speckit: implement`, `implémenter`, `coder` | `speckit_implement` | Implement tasks |
 | `speckit: clarify`, `clarifier`, `préciser` | `speckit_clarify` | Clarify requirements |
+| `speckit: validate`, `valider`, `vérifier` | `speckit_validate` | Validate compliance (security, RGPD, etc.) |
 | `speckit: memory`, `enrichir la mémoire`, `ajouter au contexte` | `speckit_memory` | Manage project memory |
 | `speckit: help`, `aide sur speckit`, questions about spec-kit | `speckit_help` | Get help and documentation |
 
@@ -51,16 +52,22 @@ speckit_specify → speckit_plan → speckit_tasks → speckit_implement
 │   ├── tasks.md
 │   ├── implement.md
 │   ├── clarify.md
+│   ├── validate.md
 │   └── memory.md
 ├── templates/         # Document templates
 │   ├── functional-spec.md
 │   ├── plan-template.md
 │   └── tasks-template.md
+├── rules/             # Validation rules
+│   ├── security-rules.md
+│   └── rgpd-rules.md
 ├── memory/            # Project context
 │   └── constitution.md
 └── workflows/         # Automated workflows
+    └── feature-quick.yaml  # Quick wins (lightweight)
 
 specs/                 # Generated specifications (output)
+└── validations/       # Validation reports
 ```
 
 ## Important Conventions
@@ -86,6 +93,7 @@ For multi-step automation, use `start_workflow`:
 
 | User Says | Action |
 |-----------|--------|
+| `speckit: start_workflow workflow_name="feature-quick"` | Start quick feature workflow (lightweight) |
 | `speckit: start_workflow workflow_name="feature-standard" PiP Support` | Start feature workflow for PiP Support |
 | `speckit: start_workflow workflow_name="bugfix" auto=true` | Start bugfix workflow in AUTO mode |
 
@@ -110,6 +118,15 @@ For multi-step automation, use `start_workflow`:
 
 **User**: "speckit: memory auto"
 **Action**: Call `speckit_memory` with `action: "auto"` to auto-enrich from context
+
+**User**: "speckit: validate security"
+**Action**: Call `speckit_validate` with `ruleType: "security"`
+
+**User**: "speckit: valider la conformité RGPD de la spec"
+**Action**: Call `speckit_validate` with `ruleType: "rgpd"`, `phase: "spec"`
+
+**User**: "speckit: validate architecture-rules"
+**Action**: Call `speckit_validate` with `ruleType: "architecture"` (uses custom rules file)
 
 **User**: "speckit: start_workflow workflow_name="feature-standard" PiP Support auto=true"
 **Action**: Call `start_workflow` with `workflow_name: "feature-standard"`, `context_id: "PiP Support"`, `auto: true`

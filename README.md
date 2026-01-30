@@ -61,23 +61,29 @@ votre-projet/
 ├── .github/
 │   └── copilot-instructions.md   # Guide Copilot sur l'utilisation de Spec-Kit
 ├── .spec-kit/
-│   ├── prompts/                  # Prompt-as-Code (lus par les outils MCP)
+│   ├── prompts/                  # Prompts (lus par les outils MCP)
 │   │   ├── specify.md
 │   │   ├── plan.md
 │   │   ├── tasks.md
 │   │   ├── implement.md
-│   │   └── clarify.md
+│   │   ├── clarify.md
+│   │   └── validate.md
 │   ├── templates/                # Templates de documents
 │   │   ├── functional-spec.md
 │   │   ├── plan-template.md
 │   │   └── tasks-template.md
+│   ├── rules/                    # Règles de validation
+│   │   ├── security-rules.md     # Règles de sécurité
+│   │   └── rgpd-rules.md         # Conformité RGPD
 │   ├── memory/                   # Contexte projet
 │   │   └── constitution.md       # Principes du projet
 │   └── workflows/                # Workflows automatisés
+│       ├── feature-quick.yaml    # Quick wins (léger)
 │       ├── feature-standard.yaml
 │       ├── feature-full.yaml
 │       └── bugfix.yaml
 └── specs/                        # Spécifications générées
+    └── validations/              # Rapports de validation
 ```
 
 ---
@@ -93,6 +99,7 @@ Utilisez ces phrases dans Copilot Chat pour déclencher les outils MCP:
 | `speckit: tasks` | `générer les tâches` | Génère la liste des tâches |
 | `speckit: implement` | `implémenter`, `coder` | Exécute les tâches |
 | `speckit: clarify` | `clarifier`, `préciser` | Clarifie les requirements ambigus |
+| `speckit: validate` | `valider`, `vérifier` | Valide la conformité (sécurité, RGPD, etc.) |
 | `speckit: memory` | `enrichir la mémoire`, `ajouter au contexte` | Gère la mémoire projet |
 | `speckit: help` | `aide sur speckit` | Obtient de l'aide sur Spec-Kit |
 

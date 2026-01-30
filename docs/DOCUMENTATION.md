@@ -238,6 +238,89 @@ speckit: memory ajouter une décision technique
 2. Structures content with dates and context
 3. Auto mode analyzes conversation to extract insights
 
+### speckit_validate
+
+**Purpose**: Validate compliance against customizable rules (security, RGPD, architecture, etc.).
+
+**Triggers**: `speckit: validate`, `valider`, `vérifier`
+
+**Parameters** (all optional):
+
+- `ruleType`: Type of validation to perform
+  - `security` - Validate against security rules (OWASP, encryption, auth...)
+  - `rgpd` - Validate GDPR compliance
+  - Custom rule file name (e.g., `architecture-rules`)
+- `phase`: Phase being validated
+  - `spec` - Validating a specification
+  - `plan` - Validating a plan
+  - `implementation` - Validating code
+- `targetPath`: Path to the file/folder to validate
+
+**Examples**:
+
+```text
+speckit: validate security
+speckit: validate rgpd phase=spec
+speckit: valider la sécurité du code
+speckit: vérifier conformité RGPD
+speckit: validate architecture-rules
+```
+
+**Behavior**:
+
+1. Loads rules from `.spec-kit/rules/{ruleType}-rules.md`
+2. Loads validation prompt from `.spec-kit/prompts/validate.md`
+3. Analyzes target against each rule
+4. Generates validation report with checklist
+5. Output saved to `specs/validations/{ruleType}-validation-{date}.md`
+
+**Available Rules** (default):
+
+| Rule Type | File | Description |
+|-----------|------|-------------|
+| `security` | `security-rules.md` | OWASP Top 10, authentication, encryption, API security |
+| `rgpd` | `rgpd-rules.md` | GDPR Articles 6, 12-22, 28, 30, 32, 35 compliance |
+
+**Creating Custom Rules**:
+
+Create a new file in `.spec-kit/rules/`:
+
+```markdown
+# .spec-kit/rules/my-custom-rules.md
+
+# My Custom Rules
+
+## Category 1
+
+- [ ] **RULE-001**: Rule description
+  - Details about the rule
+  - How to check compliance
+
+- [ ] **RULE-002**: Another rule
+  - Details
+```
+
+Then use: `speckit: validate my-custom`
+
+**Validation Report Format**:
+
+```markdown
+# Validation Report: Security
+
+**Date**: 2024-01-15
+**Phase**: implementation
+**Target**: src/auth/
+
+## Summary
+- ✅ Compliant: 8
+- ⚠️ Partial: 2
+- ❌ Non-compliant: 1
+- ➖ Not applicable: 1
+
+## Detailed Results
+...
+```
+
 ---
 
 ## Customization Guide
@@ -405,6 +488,23 @@ npx smart-spec-kit-mcp setup --project . --force
 
 ## Workflow Reference
 
+### feature-quick
+
+Lightweight workflow for quick wins and simple features.
+
+**Best for**: Small features, quick wins, simple changes
+
+**Steps**:
+
+1. Quick spec (minimal documentation)
+2. Implement directly
+3. Auto-update memory
+
+**Example**:
+```text
+speckit: start_workflow workflow_name="feature-quick"
+```
+
 ### feature-standard
 
 Standard feature specification workflow.
@@ -445,6 +545,47 @@ Bug fix workflow.
 3. Fix plan
 4. Implementation
 5. Regression tests
+
+---
+
+## Auto-Memory Enrichment
+
+After each feature or bugfix implementation, Spec-Kit **automatically** enriches project memory with relevant learnings.
+
+### What Gets Captured
+
+| Category | File | Content |
+|----------|------|---------|
+| **Decisions** | `decisions.md` | Architectural and technical decisions |
+| **Conventions** | `conventions.md` | Coding patterns and standards |
+| **Learnings** | `learnings.md` | Lessons learned, gotchas, insights |
+
+### Memory Entry Format
+
+```markdown
+## {Type}: {Title}
+**Date:** YYYY-MM-DD
+**Context:** Which task/feature triggered this
+**Description:** What was decided/learned
+**Rationale:** Why - the reasoning behind it
+```
+
+### Example Entry
+
+```markdown
+## Decision: Use Repository Pattern for Data Access
+**Date:** 2024-01-30
+**Context:** Task #3 - Implement user authentication
+**Description:** Created UserRepository interface with InMemory and SQL implementations
+**Rationale:** Allows easy testing and future database changes without affecting business logic
+```
+
+### Benefits
+
+- **Knowledge retention**: Project learnings are preserved
+- **Onboarding**: New team members can learn from history
+- **Consistency**: Decisions are documented and traceable
+- **AI context**: Future Copilot sessions have richer context
 
 ---
 

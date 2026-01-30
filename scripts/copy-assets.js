@@ -19,6 +19,8 @@ const assets = [
   'starter-kit/prompts',
   'starter-kit/templates',
   'starter-kit/memory',
+  'starter-kit/rules',
+  'starter-kit/workflows',
 ];
 
 // Single files to verify

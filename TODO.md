@@ -10,6 +10,7 @@
 ## TODO
 
 - [ ] Corriger le linter
+- [ ] Automatiser la création des branches Git pour les tasks implémentées
 - [ ] Ajouter tests unitaires pour starterKitInstaller
 - [ ] Améliorer l'intégration Azure DevOps
 - [ ] Tests d'intégration pour les outils MCP

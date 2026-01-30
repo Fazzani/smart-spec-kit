@@ -382,9 +382,9 @@ Exécutez sans --dry-run pour appliquer les changements.
   
   console.log(`
 ${colors.green}╔═══════════════════════════════════════════════════════════╗
-║                                                             ║
+║                                                            ║
 ║   ${colors.bold}✅ Installation terminée!${colors.reset}${colors.green}                               ║
-║                                                             ║
+║                                                            ║
 ╚═══════════════════════════════════════════════════════════╝${colors.reset}
 
 ${colors.bold}Prochaines étapes:${colors.reset}
@@ -403,10 +403,12 @@ ${colors.bold}Commandes simples (recommandé):${colors.reset}
    speckit: tasks      Générer les tâches
    speckit: implement  Implémenter les tâches
    speckit: clarify    Clarifier les requirements
+   speckit: validate   Valider la conformité (sécurité, RGPD...)
    speckit: memory     Gérer la mémoire projet (décisions, conventions...)
    speckit: help       Obtenir de l'aide sur Spec-Kit
 
 ${colors.bold}Workflows automatisés (optionnel):${colors.reset}
+   speckit: start_workflow workflow_name="feature-quick"     ${colors.cyan}← Quick Win (léger)${colors.reset}
    speckit: start_workflow workflow_name="feature-standard"
    speckit: start_workflow workflow_name="bugfix"
    speckit: start_workflow workflow_name="feature-full" auto=true  ${colors.cyan}← Mode AUTO${colors.reset}
@@ -414,6 +416,10 @@ ${colors.bold}Workflows automatisés (optionnel):${colors.reset}
    auto=true : enchaîne les étapes sans approbation
    Les workflows guident automatiquement toutes les étapes.
    Voir .spec-kit/workflows/ pour les personnaliser.
+
+${colors.bold}Auto-Memory:${colors.reset}
+   Après chaque implémentation, les décisions et learnings sont
+   automatiquement sauvegardés dans .spec-kit/memory/
 
 ${colors.bold}Exemples:${colors.reset}
    speckit: spec pour un système d'authentification

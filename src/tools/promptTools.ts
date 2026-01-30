@@ -44,6 +44,12 @@ const MemoryArgsSchema = z.object({
   category: z.string().optional().describe("Category for organizing memory: 'decisions', 'architecture', 'conventions', 'learnings', 'context'. Default: inferred from fileName"),
 });
 
+const ValidateArgsSchema = z.object({
+  ruleType: z.string().optional().describe("Type of validation: 'security', 'rgpd', 'architecture', or custom rule file name. Default: 'security'"),
+  phase: z.enum(["spec", "plan", "implementation"]).optional().describe("Phase to validate: 'spec' (after specification), 'plan' (after planning), 'implementation' (after coding). Default: 'spec'"),
+  targetPath: z.string().optional().describe("Path to the document or code to validate. Auto-detects if not provided."),
+});
+
 /**
  * Load documentation from package
  */
@@ -169,6 +175,40 @@ async function loadTemplate(projectPath: string, templateName: string): Promise<
     return content;
   } catch {
     return null;
+  }
+}
+
+/**
+ * Load validation rules from .spec-kit/rules/
+ */
+async function loadRules(projectPath: string, ruleType: string): Promise<string | null> {
+  const rulesPath = path.join(projectPath, ".spec-kit", "rules", `${ruleType}-rules.md`);
+  
+  try {
+    const content = await fs.readFile(rulesPath, "utf-8");
+    return content;
+  } catch {
+    // Try without -rules suffix
+    const altPath = path.join(projectPath, ".spec-kit", "rules", `${ruleType}.md`);
+    try {
+      return await fs.readFile(altPath, "utf-8");
+    } catch {
+      return null;
+    }
+  }
+}
+
+/**
+ * List available rule files in .spec-kit/rules/
+ */
+async function listRules(projectPath: string): Promise<string[]> {
+  const rulesDir = path.join(projectPath, ".spec-kit", "rules");
+  
+  try {
+    const files = await fs.readdir(rulesDir);
+    return files.filter(f => f.endsWith(".md")).map(f => f.replace(".md", "").replace("-rules", ""));
+  } catch {
+    return [];
   }
 }
 
@@ -523,7 +563,13 @@ Based on the prompt instructions, tasks, specification, and project constitution
 2. Implement the code following project conventions
 3. Mark the task as completed in tasks.md
 4. Report what was implemented
-5. Ask if user wants to continue with next task`,
+5. **Auto-enrich memory**: After implementation, automatically save learnings to \`.spec-kit/memory/\`:
+   - Technical decisions made → \`decisions.md\`
+   - New patterns/conventions used → \`conventions.md\`
+   - Lessons learned → \`learnings.md\`
+   
+   Format each entry with date, context, and rationale.
+6. Ask if user wants to continue with next task`,
         }],
       };
     }
@@ -859,6 +905,179 @@ Example formats:
 **Application:** {How to apply it}
 \`\`\`
 `}`,
+        }],
+      };
+    }
+  );
+
+  // speckit_validate - Validate against rules
+  server.tool(
+    "speckit_validate",
+    "Validate specifications or implementation against customizable rules (security, RGPD, architecture, or custom). Use this when the user says 'speckit: validate', 'valider sécurité', 'vérifier RGPD', or 'validation rules'.",
+    ValidateArgsSchema.shape,
+    async ({ ruleType = "security", phase = "spec", targetPath }) => {
+      const projectPath = process.cwd();
+      
+      // Check setup
+      const setup = await checkSetup(projectPath);
+      if (!setup.ok) {
+        return {
+          content: [{
+            type: "text" as const,
+            text: `## ⚠️ Spec-Kit Setup Required\n\nMissing: ${setup.missing.join(", ")}\n\nRun \`npx smart-spec-kit-mcp setup\` to initialize Spec-Kit in this project.`,
+          }],
+        };
+      }
+
+      // Load validation rules
+      const rules = await loadRules(projectPath, ruleType);
+      
+      // If rules not found, list available rules
+      if (!rules) {
+        const availableRules = await listRules(projectPath);
+        
+        if (availableRules.length === 0) {
+          return {
+            content: [{
+              type: "text" as const,
+              text: `## ⚠️ No Validation Rules Found
+
+No rules files found in \`.spec-kit/rules/\`.
+
+**To add rules:**
+
+1. Create \`.spec-kit/rules/\` directory
+2. Add rule files:
+   - \`security-rules.md\` - Security validation rules
+   - \`rgpd-rules.md\` - GDPR/RGPD compliance rules
+   - \`{custom}-rules.md\` - Your custom rules
+
+**Run setup to install default rules:**
+\`\`\`bash
+npx smart-spec-kit-mcp setup --force
+\`\`\`
+
+This will install default security and RGPD rules templates.`,
+            }],
+          };
+        }
+        
+        return {
+          content: [{
+            type: "text" as const,
+            text: `## ⚠️ Rule Type Not Found
+
+Rule type \`${ruleType}\` not found.
+
+**Available rule types:**
+${availableRules.map(r => `- \`${r}\``).join("\n")}
+
+**Usage:**
+\`\`\`
+speckit: validate security
+speckit: validate rgpd
+speckit: validate ${availableRules[0] || "custom"}
+\`\`\``,
+          }],
+        };
+      }
+
+      // Find target document to validate
+      let targetContent = "";
+      let resolvedTargetPath: string | undefined = targetPath;
+      
+      if (!resolvedTargetPath) {
+        if (phase === "spec") {
+          resolvedTargetPath = (await findRecentSpec(projectPath, "spec")) ?? undefined;
+        } else if (phase === "plan") {
+          resolvedTargetPath = (await findRecentSpec(projectPath, "plan")) ?? undefined;
+        }
+      }
+      
+      if (resolvedTargetPath) {
+        try {
+          targetContent = await fs.readFile(resolvedTargetPath, "utf-8");
+        } catch {
+          targetContent = "";
+        }
+      }
+
+      // Load validation prompt
+      const validatePrompt = await loadPrompt(projectPath, "validate");
+      const constitution = await loadConstitution(projectPath);
+
+      // Determine validation title
+      const ruleTypeDisplay = ruleType.charAt(0).toUpperCase() + ruleType.slice(1);
+      const phaseDisplay = phase === "spec" ? "Specification" : phase === "plan" ? "Plan" : "Implementation";
+
+      return {
+        content: [{
+          type: "text" as const,
+          text: `## 🔍 ${ruleTypeDisplay} Validation - ${phaseDisplay} Phase
+
+**Rule Type:** ${ruleType}
+**Phase:** ${phase}
+${resolvedTargetPath ? `**Target:** ${resolvedTargetPath}` : "**Target:** Current context"}
+
+---
+
+## Validation Rules
+
+${rules}
+
+---
+
+${targetContent ? `## Document to Validate\n\n\`\`\`markdown\n${targetContent.slice(0, 3000)}${targetContent.length > 3000 ? "\n...(truncated)" : ""}\n\`\`\`\n\n---\n\n` : ""}
+
+${validatePrompt ? `## Validation Instructions\n\n${validatePrompt}\n\n---\n\n` : ""}
+
+${constitution ? `## Project Constitution (Context)\n\n${constitution.slice(0, 1000)}${constitution.length > 1000 ? "\n...(truncated)" : ""}\n\n---\n\n` : ""}
+
+## Copilot Instructions
+
+Perform a thorough validation of the ${phaseDisplay.toLowerCase()} against the ${ruleTypeDisplay} rules:
+
+1. **Review each rule category** in the rules document
+2. **For each applicable rule:**
+   - Check if addressed in the target document/code
+   - Mark status: ✅ Compliant | ⚠️ Partial | ❌ Non-Compliant | ➖ N/A
+   - Cite specific evidence or gaps
+3. **Generate a validation report** with:
+   - Summary statistics
+   - Critical issues (blocking)
+   - Warnings (should fix)
+   - Recommendations
+4. **Save report** to \`specs/validations/${ruleType}-${new Date().toISOString().split("T")[0]}.md\`
+
+### Report Template
+
+\`\`\`markdown
+# ${ruleTypeDisplay} Validation Report
+
+**Date:** ${new Date().toISOString().split("T")[0]}
+**Phase:** ${phaseDisplay}
+**Target:** ${resolvedTargetPath || "N/A"}
+
+## Summary
+| Status | Count |
+|--------|-------|
+| ✅ Compliant | X |
+| ⚠️ Partial | X |
+| ❌ Non-Compliant | X |
+| ➖ N/A | X |
+
+## Critical Issues
+{List any blocking non-compliant items}
+
+## Warnings
+{List partial compliance items}
+
+## Detailed Findings
+{For each rule category, list findings}
+
+## Recommendations
+{List improvement suggestions}
+\`\`\``,
         }],
       };
     }

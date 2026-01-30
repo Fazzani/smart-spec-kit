@@ -71,7 +71,48 @@ Report:
 - Any deviations from plan
 - Next task to implement (if continuing)
 
-## 8. Iteration
+## 8. Auto-Enrich Memory
+
+After each implementation, **automatically** save relevant learnings to `.spec-kit/memory/`:
+
+### What to capture:
+
+**Decisions** (save to `decisions.md`):
+- Architectural choices made during implementation
+- Technology/library selections
+- Trade-offs considered
+
+**Conventions** (save to `conventions.md`):
+- New patterns established
+- Code conventions discovered or enforced
+- Best practices applied
+
+**Learnings** (save to `learnings.md`):
+- Problems encountered and solutions found
+- Performance insights
+- Gotchas or edge cases discovered
+
+### Format for memory entries:
+
+```markdown
+## {Type}: {Title}
+**Date:** {YYYY-MM-DD}
+**Context:** {Brief context - which task/feature}
+**Description:** {What was decided/learned}
+**Rationale:** {Why - reasoning behind it}
+```
+
+### Example:
+
+```markdown
+## Decision: Use Repository Pattern for Data Access
+**Date:** 2024-01-30
+**Context:** Task #3 - Implement user authentication
+**Description:** Created UserRepository interface with InMemory and SQL implementations
+**Rationale:** Allows easy testing and future database changes without affecting business logic
+```
+
+## 9. Iteration
 
 Ask the user:
 - "Task {ID} completed. Continue with {next task}? (yes/no)"

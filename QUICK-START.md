@@ -40,6 +40,7 @@ Utilisez ces phrases dans **Copilot Chat**:
 | `speckit: tasks` | Génère la liste des tâches |
 | `speckit: implement` | Exécute les tâches d'implémentation |
 | `speckit: clarify` | Clarifie les requirements ambigus |
+| `speckit: validate` | Valide la conformité (sécurité, RGPD, etc.) |
 | `speckit: memory` | Gère la mémoire projet (décisions, conventions...) |
 | `speckit: help` | Obtient de l'aide sur Spec-Kit |
 

@@ -15,6 +15,7 @@ const SPEC_KIT_DIR = ".spec-kit";
 const PROMPTS_DIR = "prompts";
 const TEMPLATES_DIR = "templates";
 const MEMORY_DIR = "memory";
+const RULES_DIR = "rules";
 const SPECS_DIR = "specs";
 
 /**
@@ -197,7 +198,27 @@ export async function installStarterKit(
     }
   }
 
-  // 4. Create specs/ directory
+  // 4. Install rules to .spec-kit/rules/
+  const rulesSrc = path.join(starterKitPath, "rules");
+  const rulesDest = path.join(projectPath, SPEC_KIT_DIR, RULES_DIR);
+
+  if (await exists(rulesSrc)) {
+    const rulesExist = await exists(rulesDest);
+    
+    if (rulesExist && !options.force) {
+      result.skipped.push(`${SPEC_KIT_DIR}/${RULES_DIR}`);
+    } else {
+      try {
+        await copyDir(rulesSrc, rulesDest);
+        result.created.push(`${SPEC_KIT_DIR}/${RULES_DIR}`);
+      } catch (error) {
+        result.errors.push(`Failed to copy rules: ${error}`);
+        result.success = false;
+      }
+    }
+  }
+
+  // 5. Create specs/ directory
   const specsDir = path.join(projectPath, SPECS_DIR);
   if (!(await exists(specsDir))) {
     try {
@@ -210,7 +231,19 @@ export async function installStarterKit(
     }
   }
 
-  // 5. Generate VS Code MCP configuration
+  // Create specs/validations/ directory for validation reports
+  const validationsDir = path.join(specsDir, "validations");
+  if (!(await exists(validationsDir))) {
+    try {
+      await fs.mkdir(validationsDir, { recursive: true });
+      await fs.writeFile(path.join(validationsDir, ".gitkeep"), "");
+      result.created.push(`${SPECS_DIR}/validations`);
+    } catch (error) {
+      // Non-blocking error
+    }
+  }
+
+  // 6. Generate VS Code MCP configuration
   if (!options.skipVsCode) {
     result.vsCodeConfig = generateVsCodeConfig();
   }
@@ -281,11 +314,16 @@ export function formatInstallReport(result: InstallResult, projectPath: string):
   report += "│   │   ├── plan.md\n";
   report += "│   │   ├── tasks.md\n";
   report += "│   │   ├── implement.md\n";
-  report += "│   │   └── clarify.md\n";
+  report += "│   │   ├── clarify.md\n";
+  report += "│   │   └── validate.md\n";
   report += "│   ├── templates/           # Specification templates\n";
+  report += "│   ├── rules/               # Validation rules (security, RGPD)\n";
+  report += "│   │   ├── security-rules.md\n";
+  report += "│   │   └── rgpd-rules.md\n";
   report += "│   └── memory/              # Project context\n";
   report += "│       └── constitution.md  # Project principles\n";
-  report += "└── specs/                   # Generated specifications\n";
+  report += "├── specs/                   # Generated specifications\n";
+  report += "│   └── validations/         # Validation reports\n";
   report += "```\n\n";
 
   report += "## VS Code Configuration\n\n";
@@ -296,11 +334,14 @@ export function formatInstallReport(result: InstallResult, projectPath: string):
 
   report += "## Next Steps\n\n";
   report += "1. **Edit your constitution**: `.spec-kit/memory/constitution.md`\n";
-  report += "2. **Use spec-kit commands** in Copilot Chat:\n";
+  report += "2. **Customize validation rules**: `.spec-kit/rules/`\n";
+  report += "3. **Use spec-kit commands** in Copilot Chat:\n";
   report += "   - `speckit: spec` - Create a specification\n";
   report += "   - `speckit: plan` - Create implementation plan\n";
   report += "   - `speckit: tasks` - Generate task breakdown\n";
-  report += "   - `speckit: implement` - Start implementation\n\n";
+  report += "   - `speckit: implement` - Start implementation\n";
+  report += "   - `speckit: validate security` - Validate against security rules\n";
+  report += "   - `speckit: validate rgpd` - Validate against RGPD rules\n\n";
 
   report += "## Available Commands\n\n";
   report += "| Command | Description |\n";
@@ -310,6 +351,9 @@ export function formatInstallReport(result: InstallResult, projectPath: string):
   report += "| `speckit: plan` | Create technical implementation plan |\n";
   report += "| `speckit: tasks` | Generate task breakdown |\n";
   report += "| `speckit: implement` | Execute implementation tasks |\n";
+  report += "| `speckit: validate` | Validate against customizable rules |\n";
+  report += "| `speckit: memory` | Manage project memory and context |\n";
+  report += "| `speckit: help` | Get help and documentation |\n";
 
   return report;
 }

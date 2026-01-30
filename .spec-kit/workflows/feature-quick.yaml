@@ -1,0 +1,69 @@
+# Feature Quick Workflow
+# Lightweight workflow for simple features / quick wins
+
+name: feature-quick
+displayName: "Quick Feature (Quick Win)"
+description: "Lightweight workflow for simple features that don't need full specification"
+
+metadata:
+  version: "1.0"
+  author: "Spec-Kit"
+  tags:
+    - feature
+    - quick-win
+    - lightweight
+
+template: functional-spec.md
+defaultAgent: SpecAgent
+
+steps:
+  - id: quick-spec
+    name: "Quick Specification"
+    action: call_agent
+    agent: SpecAgent
+    description: |
+      Create a minimal specification with:
+      - Feature summary (2-3 sentences)
+      - User story (As a... I want... So that...)
+      - Acceptance criteria (3-5 bullet points)
+      - Technical notes (if any)
+      
+      Keep it simple and actionable. No lengthy documentation needed.
+    inputs:
+      - name: requirements
+        description: "Feature description from user"
+        required: true
+    outputs:
+      - quick_spec
+
+  - id: implement
+    name: "Implement"
+    action: call_agent
+    agent: SpecAgent
+    description: |
+      Implement the feature directly based on the quick spec.
+      
+      Guidelines:
+      - Follow project conventions from constitution
+      - Write clean, tested code
+      - Keep changes minimal and focused
+    inputs:
+      source: "quick_spec"
+    outputs:
+      - implementation
+
+  - id: auto-memory
+    name: "Update Memory"
+    action: call_agent
+    agent: SpecAgent
+    description: |
+      Automatically enrich project memory with:
+      - What was implemented (brief summary)
+      - Any technical decisions made
+      - Patterns or conventions used
+      
+      Save to .spec-kit/memory/learnings.md or appropriate category.
+    inputs:
+      source: "implementation"
+    outputs:
+      - memory_update
