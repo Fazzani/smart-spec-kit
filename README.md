@@ -180,6 +180,7 @@ Vous pouvez aussi utiliser ces phrases dans Copilot Chat:
 ```
 
 Ou avec la commande par mots-clés:
+
 ```text
 speckit: spec pour un système de notifications push
 ```
@@ -283,9 +284,12 @@ Pour récupérer automatiquement les work items:
       },
       "azure-devops": {
         "command": "npx",
-        "args": ["-y", "@anthropic-ai/azure-devops-mcp"],
+        "args": [
+        "-y",
+        "@azure-devops/mcp",
+        "your-org",
+      ],
         "env": {
-          "AZURE_DEVOPS_ORG_URL": "https://dev.azure.com/your-org",
           "AZURE_DEVOPS_PAT": "your-token"
         }
       }
@@ -326,7 +330,7 @@ Pour une documentation détaillée sur tous les outils et fonctionnalités:
 - **[docs/DOCUMENTATION.md](docs/DOCUMENTATION.md)** - Documentation complète des outils MCP et workflows
 - **[docs/PACKAGING.md](docs/PACKAGING.md)** - Guide de packaging et distribution
 - **[PROJECT_CONTEXT.md](PROJECT_CONTEXT.md)** - Contexte du projet Spec-Kit
-- **[TASK_QUEUE.md](TASK_QUEUE.md)** - Tâches en cours et prévues
+- **[TODO.md](TODO.md)** - Tâches en cours et prévues
 - **[TROUBLESHOOTING.md](TROUBLESHOOTING.md)** - Guide de dépannage complet
 
 ---
