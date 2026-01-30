@@ -38,9 +38,20 @@ Spec-Kit fonctionne **immédiatement** avec les workflows par défaut, mais perm
 
 ## 📥 Installation pour l'Utilisateur Final
 
-### Option 1: NPX (Recommandé)
+### Option 1: Setup Automatique (Recommandé)
 
-Aucune installation nécessaire, toujours à jour:
+```bash
+npx smart-spec-kit-mcp setup
+```
+
+Configure automatiquement:
+- VS Code MCP server (profils et settings)
+- Slash commands (`.github/prompts/speckit.*.prompt.md`)
+- Prompts, templates, workflows dans `.spec-kit/`
+
+### Option 2: NPX Direct
+
+Configuration manuelle dans VS Code settings:
 
 ```json
 {
@@ -48,17 +59,17 @@ Aucune installation nécessaire, toujours à jour:
     "servers": {
       "spec-kit": {
         "command": "npx",
-        "args": ["-y", "spec-kit-mcp"]
+        "args": ["-y", "smart-spec-kit-mcp"]
       }
     }
   }
 }
 ```
 
-### Option 2: Installation Globale
+### Option 3: Installation Globale
 
 ```bash
-npm install -g spec-kit-mcp
+npm install -g smart-spec-kit-mcp
 ```
 
 ```json
@@ -66,7 +77,7 @@ npm install -g spec-kit-mcp
   "mcp": {
     "servers": {
       "spec-kit": {
-        "command": "spec-kit-mcp"
+        "command": "smart-spec-kit-mcp"
       }
     }
   }
@@ -82,7 +93,13 @@ npm install -g spec-kit-mcp
 Dans Copilot Chat:
 
 ```text
-@spec-kit init
+speckit: init
+```
+
+Ou via la CLI:
+
+```bash
+npx smart-spec-kit-mcp setup
 ```
 
 Cela crée:
@@ -252,19 +269,29 @@ Défini dans `package.json`:
 ### Structure du package publié
 
 ```text
-spec-kit-mcp/
+smart-spec-kit-mcp/
 ├── dist/                    ← Code compilé
-│   ├── index.js            ← Entry point
+│   ├── index.js            ← Entry point MCP
+│   ├── cli.js              ← CLI pour setup
 │   ├── engine/
 │   ├── tools/
 │   ├── prompts/
 │   ├── schemas/
 │   └── utils/
-├── workflows/               ← Workflows par défaut
+├── starter-kit/             ← Installé par setup
+│   ├── github-prompts/     ← Slash commands VS Code
+│   ├── prompts/            ← Prompts MCP
+│   ├── templates/          ← Templates de specs
+│   ├── rules/              ← Règles de validation
+│   ├── memory/             ← Constitution projet
+│   └── workflows/          ← Workflows par défaut
+├── workflows/               ← Workflows package
 │   ├── feature-standard.yaml
 │   ├── feature-full.yaml
-│   └── bugfix.yaml
-├── templates/               ← Templates par défaut
+│   ├── feature-quick.yaml
+│   ├── bugfix.yaml
+│   └── bugfix-quick.yaml
+├── templates/               ← Templates package
 │   ├── functional-spec.md
 │   └── bugfix-report.md
 ├── package.json
@@ -293,9 +320,13 @@ const searchPaths = [
 
 ### Voir la configuration actuelle
 
+Dans Copilot Chat:
+
 ```text
-@spec-kit config
+speckit: show_config
 ```
+
+Ou via l'outil MCP `show_config`.
 
 Affiche:
 - Chemins de recherche
@@ -304,8 +335,14 @@ Affiche:
 
 ### Tester un workflow custom
 
+Utilisez la slash command ou l'outil MCP:
+
 ```text
-@spec-kit start_workflow workflow_name="custom-feature" context_id="TEST"
+# Slash command
+/speckit.specify avec workflow custom-feature pour TEST-123
+
+# Keyword
+speckit: start_workflow workflow_name="custom-feature" context_id="TEST"
 ```
 
 ---
@@ -315,9 +352,9 @@ Affiche:
 Future versions pourraient inclure des presets:
 
 ```bash
-npx spec-kit-mcp init --preset=react
-npx spec-kit-mcp init --preset=dotnet
-npx spec-kit-mcp init --preset=python
+npx smart-spec-kit-mcp setup --preset=react
+npx smart-spec-kit-mcp setup --preset=dotnet
+npx smart-spec-kit-mcp setup --preset=python
 ```
 
 Chaque preset créerait `.spec-kit/` avec des workflows optimisés pour la stack.

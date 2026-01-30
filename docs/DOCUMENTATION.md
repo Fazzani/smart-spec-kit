@@ -15,25 +15,34 @@ Spec-Kit is an MCP (Model Context Protocol) server that provides **customizable 
    - Exposes tools via Model Context Protocol
    - Communicates with GitHub Copilot
 
-2. **Copilot Instructions** (`.github/copilot-instructions.md`)
-   - Tells Copilot how to use Spec-Kit tools
-   - Defines command keywords and aliases
+2. **Slash Commands** (`.github/prompts/`)
+   - Native GitHub Copilot slash commands (`/speckit.*`)
+   - Trigger MCP tools directly
+   - Discovered automatically by VS Code
 
-3. **Prompts** (`.spec-kit/prompts/`)
+3. **Copilot Instructions** (`.github/copilot-instructions.md`)
+   - Tells Copilot how to use Spec-Kit tools
+   - Defines keyword commands and aliases
+
+4. **Prompts** (`.spec-kit/prompts/`)
    - Customizable prompt files read by MCP tools
    - Define behavior for each command
    - Versioned and maintainable in your project
 
-4. **Templates** (`.spec-kit/templates/`)
+5. **Templates** (`.spec-kit/templates/`)
    - Document templates for specs, plans, tasks
    - Markdown format
 
-5. **Constitution** (`.spec-kit/memory/constitution.md`)
+6. **Constitution** (`.spec-kit/memory/constitution.md`)
    - Project principles and conventions
    - Technical stack definition
    - Development guidelines
 
-6. **Workflows** (`.spec-kit/workflows/`)
+7. **Rules** (`.spec-kit/rules/`)
+   - Validation rules (security, RGPD, custom)
+   - Markdown checklists
+
+8. **Workflows** (`.spec-kit/workflows/`)
    - YAML-based workflow definitions
    - Multi-step automated processes
 
@@ -47,7 +56,9 @@ Spec-Kit is an MCP (Model Context Protocol) server that provides **customizable 
 
 **Purpose**: Create a functional specification from requirements.
 
-**Triggers**: `speckit: spec`, `speckit: specify`, `créer une spec`
+**Slash Command**: `/speckit.specify`
+
+**Keyword Triggers**: `speckit: spec`, `speckit: specify`, `créer une spec`
 
 **Parameters** (all optional):
 
@@ -77,7 +88,9 @@ speckit: spec user authentication with OAuth
 
 **Purpose**: Create an implementation plan from a specification.
 
-**Triggers**: `speckit: plan`, `planifier`, `créer un plan`
+**Slash Command**: `/speckit.plan`
+
+**Keyword Triggers**: `speckit: plan`, `planifier`, `créer un plan`
 
 **Parameters** (all optional):
 
@@ -101,7 +114,9 @@ speckit: plan pour la spec specs/auth-spec.md
 
 **Purpose**: Generate a task breakdown from a plan.
 
-**Triggers**: `speckit: tasks`, `générer les tâches`, `créer les tâches`
+**Slash Command**: `/speckit.tasks`
+
+**Keyword Triggers**: `speckit: tasks`, `générer les tâches`, `créer les tâches`
 
 **Parameters** (all optional):
 
@@ -125,7 +140,9 @@ speckit: générer les tâches
 
 **Purpose**: Implement tasks one by one.
 
-**Triggers**: `speckit: implement`, `implémenter`, `coder`
+**Slash Command**: `/speckit.implement`
+
+**Keyword Triggers**: `speckit: implement`, `implémenter`, `coder`
 
 **Parameters** (all optional):
 
@@ -151,7 +168,9 @@ speckit: implémenter la tâche 5
 
 **Purpose**: Clarify ambiguous requirements.
 
-**Triggers**: `speckit: clarify`, `clarifier`, `préciser`
+**Slash Command**: `/speckit.clarify`
+
+**Keyword Triggers**: `speckit: clarify`, `clarifier`, `préciser`
 
 **Parameters** (all optional):
 
@@ -175,7 +194,9 @@ speckit: clarifier les critères d'acceptation
 
 **Purpose**: Provide help and documentation.
 
-**Triggers**: `speckit: help`, `aide sur speckit`
+**Slash Command**: `/speckit.help`
+
+**Keyword Triggers**: `speckit: help`, `aide sur speckit`
 
 **Parameters** (all optional):
 
@@ -200,7 +221,9 @@ speckit: help comment créer un template ?
 
 **Purpose**: Manage project memory and context in `.spec-kit/memory/`.
 
-**Triggers**: `speckit: memory`, `enrichir la mémoire`, `ajouter au contexte`
+**Slash Command**: `/speckit.memory`
+
+**Keyword Triggers**: `speckit: memory`, `enrichir la mémoire`, `ajouter au contexte`
 
 **Parameters** (all optional):
 
@@ -242,7 +265,9 @@ speckit: memory ajouter une décision technique
 
 **Purpose**: Validate compliance against customizable rules (security, RGPD, architecture, etc.).
 
-**Triggers**: `speckit: validate`, `valider`, `vérifier`
+**Slash Command**: `/speckit.validate`
+
+**Keyword Triggers**: `speckit: validate`, `valider`, `vérifier`
 
 **Parameters** (all optional):
 

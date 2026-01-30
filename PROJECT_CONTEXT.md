@@ -1,31 +1,66 @@
-# 🏗 PROJECT CONTEXT: Spec-Kit Industrialized
+# 🏗 PROJECT CONTEXT: Spec-Kit
 
 ## 🎯 Vision
-Nous construisons une plateforme d'ingénierie "AI-driven" basée sur le pattern **Multi-MCP (Model Context Protocol)**.
-L'objectif est d'orchestrer la création de spécifications, plans techniques et tâches Azure DevOps directement depuis VS Code, via GitHub Copilot.
+Plateforme d'orchestration automatisée pour le **développement piloté par les spécifications** (Spec-Driven Development) via **GitHub Copilot** et **MCP** (Model Context Protocol).
 
 ## 📐 Architecture Technique
-L'architecture est centrée sur VS Code agissant comme HUB pour deux serveurs MCP :
 
-1.  **Server A (Microsoft ADO):** Le serveur officiel `@modelcontextprotocol/server-azure-devops`. Gère l'accès brut aux données (CRUD Work Items, Git).
-2.  **Server B (Spec-Kit Custom):** Notre serveur Node.js/TypeScript custom. Gère la logique métier, les Workflows (YAML), les Templates (Markdown) et les Prompts Système.
+L'architecture est centrée sur VS Code agissant comme HUB pour le serveur MCP Spec-Kit :
 
-### Flux de données
-User (VS Code) -> Spec-Kit Server (Load Workflow) -> Instruction to Copilot -> ADO Server (Fetch Data) -> Spec-Kit Server (Generate Content).
+### Composants
+
+1. **MCP Server** (`smart-spec-kit-mcp`)
+   - Serveur Node.js/TypeScript
+   - Expose des outils via Model Context Protocol
+   - Communique avec GitHub Copilot
+
+2. **Slash Commands** (`.github/prompts/`)
+   - Commandes natives GitHub Copilot (`/speckit.*`)
+   - Déclenchent les outils MCP directement
+
+3. **Prompts** (`.spec-kit/prompts/`)
+   - Prompts personnalisables lus par les outils MCP
+   - Définissent le comportement de chaque commande
+
+4. **Templates** (`.spec-kit/templates/`)
+   - Templates de documents (specs, plans, tasks)
+   - Format Markdown
+
+5. **Rules** (`.spec-kit/rules/`)
+   - Règles de validation (sécurité, RGPD, custom)
+   - Checklists Markdown
+
+6. **Workflows** (`.spec-kit/workflows/`)
+   - Définitions YAML de workflows multi-étapes
+   - Processus automatisés
 
 ## 🛠 Tech Stack
 - **Runtime:** Node.js (Latest LTS)
 - **Language:** TypeScript
 - **Framework:** `@modelcontextprotocol/sdk`
-- **Format:** YAML (Workflow definitions), Markdown (Templates), JSON Schema.
-- **Client:** VS Code + GitHub Copilot Chat Extension.
+- **Format:** YAML (Workflows), Markdown (Templates/Prompts), JSON Schema
+- **Client:** VS Code + GitHub Copilot Chat Extension
 
-## 📂 Structure de dossier cible
-/spec-kit-mcp
-  /src
-    /tools (Logic for workflow engine)
-    /prompts (System prompts for agents)
-    /utils (YAML parsers, Template engines)
-  /workflows (The YAML definitions: feature.yaml, bugfix.yaml)
-  /templates (The Markdown skeletons)
-  /schemas (Validation schemas for workflows)
+## 📂 Structure de dossier
+
+```
+smart-spec-kit/
+├── src/
+│   ├── tools/           # Outils MCP (speckit_specify, etc.)
+│   ├── prompts/         # System prompts pour agents
+│   ├── utils/           # Utilitaires (YAML parsers, Template engines)
+│   └── engine/          # Workflow engine
+├── workflows/           # Définitions YAML des workflows
+├── templates/           # Templates Markdown
+├── starter-kit/         # Kit d'installation pour projets
+│   ├── prompts/         # Prompts par défaut
+│   ├── templates/       # Templates par défaut
+│   ├── memory/          # Constitution par défaut
+│   ├── rules/           # Règles de validation
+│   ├── workflows/       # Workflows par défaut
+│   └── github-prompts/  # Slash commands (.prompt.md)
+└── schemas/             # Schémas de validation
+```
+
+## 🔗 Intégration optionnelle Azure DevOps
+Peut être utilisé avec le serveur `@modelcontextprotocol/server-azure-devops` pour récupérer automatiquement les work items.

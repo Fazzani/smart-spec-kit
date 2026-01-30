@@ -558,8 +558,9 @@ ${colors.bold}Prochaines étapes:${colors.reset}
    .spec-kit/memory/constitution.md
 
 3. ${colors.cyan}Utilisez les slash commands dans Copilot Chat:${colors.reset}
+   Tapez / et cherchez les commandes /speckit.*
 
-${colors.bold}Slash Commands (tapez / pour voir la liste):${colors.reset}
+${colors.bold}Slash Commands Disponibles:${colors.reset}
    /speckit.specify    Créer une spécification
    /speckit.plan       Créer le plan technique
    /speckit.tasks      Générer les tâches
@@ -569,41 +570,23 @@ ${colors.bold}Slash Commands (tapez / pour voir la liste):${colors.reset}
    /speckit.memory     Gérer la mémoire projet
    /speckit.help       Obtenir de l'aide sur Spec-Kit
 
-${colors.bold}Commandes par mots-clés (alternative):${colors.reset}
-   speckit: spec       Créer une spécification (description libre)
-   speckit: plan       Créer le plan technique
-   speckit: tasks      Générer les tâches
-   speckit: implement  Implémenter les tâches
-
-${colors.bold}Workflows automatisés (optionnel):${colors.reset}
-   speckit: start_workflow workflow_name="feature-quick"     ${colors.cyan}← Quick Win (léger)${colors.reset}
-   speckit: start_workflow workflow_name="feature-standard"
-   speckit: start_workflow workflow_name="bugfix-quick"      ${colors.cyan}← Bugfix rapide${colors.reset}
-   speckit: start_workflow workflow_name="bugfix"
-   speckit: start_workflow workflow_name="feature-full" auto=true  ${colors.cyan}← Mode AUTO${colors.reset}
-
-   auto=true : enchaîne les étapes sans approbation
-   Les workflows guident automatiquement toutes les étapes.
-   Voir .spec-kit/workflows/ pour les personnaliser.
-
-${colors.bold}Auto-Memory:${colors.reset}
-   Après chaque implémentation, les décisions et learnings sont
-   automatiquement sauvegardés dans .spec-kit/memory/
+${colors.bold}Workflow Recommandé:${colors.reset}
+   1. /speckit.specify pour décrire votre feature
+   2. /speckit.plan pour créer le plan technique
+   3. /speckit.tasks pour générer les tâches
+   4. /speckit.implement pour coder
+   5. /speckit.validate pour vérifier la conformité
+   6. /speckit.memory pour documenter les décisions
 
 ${colors.bold}Exemples:${colors.reset}
    /speckit.specify pour un système d'authentification
    /speckit.plan
-   speckit: start_workflow workflow_name="feature-standard" PiP Support auto=true
-   /speckit.help comment créer un workflow ?
+   /speckit.tasks
+   /speckit.help comment créer un workflow personnalisé ?
 
-${colors.bold}Structure créée:${colors.reset}
-   .github/prompts/                 Slash commands (/speckit.*)
-   .github/copilot-instructions.md  Instructions pour Copilot
-   .spec-kit/prompts/               Prompts (personnalisables)
-   .spec-kit/templates/             Templates de documents
-   .spec-kit/memory/                Constitution du projet
-   .spec-kit/workflows/             Workflows YAML (optionnel)
-   specs/                           Spécifications générées
+${colors.bold}Auto-Memory:${colors.reset}
+   Vos décisions et learnings sont automatiquement sauvegardés
+   dans .spec-kit/memory/ après chaque implémentation
 
 ${colors.blue}Documentation: https://github.com/fazzani/smart-spec-kit${colors.reset}
 `);

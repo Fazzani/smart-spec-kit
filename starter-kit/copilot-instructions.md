@@ -127,37 +127,37 @@ For multi-step automation, use `start_workflow`:
 
 ## Example Interactions
 
-**User**: "speckit: créer une spec pour un système de notifications push"
+**User**: `/speckit.specify pour un système de notifications push`
 **Action**: Call `speckit_specify` with `requirements: "système de notifications push"`
 
-**User**: "speckit: planifier l'implémentation"  
+**User**: `/speckit.plan`  
 **Action**: Call `speckit_plan` (will find the most recent spec automatically)
 
-**User**: "speckit: implement task 3"
+**User**: `/speckit.implement task 3`
 **Action**: Call `speckit_implement` with `taskId: "3"`
 
-**User**: "speckit: memory list"
+**User**: `/speckit.memory list`
 **Action**: Call `speckit_memory` with `action: "list"`
 
-**User**: "speckit: memory ajouter une décision technique"
+**User**: `/speckit.memory ajouter une décision technique`
 **Action**: Call `speckit_memory` with `action: "add"`, `category: "decisions"`
 
-**User**: "speckit: memory auto"
+**User**: `/speckit.memory auto`
 **Action**: Call `speckit_memory` with `action: "auto"` to auto-enrich from context
 
-**User**: "speckit: validate security"
+**User**: `/speckit.validate security`
 **Action**: Call `speckit_validate` with `ruleType: "security"`
 
-**User**: "speckit: valider la conformité RGPD de la spec"
+**User**: `/speckit.validate rgpd phase=spec`
 **Action**: Call `speckit_validate` with `ruleType: "rgpd"`, `phase: "spec"`
 
-**User**: "speckit: validate architecture-rules"
+**User**: `/speckit.validate architecture-rules`
 **Action**: Call `speckit_validate` with `ruleType: "architecture"` (uses custom rules file)
 
-**User**: "speckit: start_workflow workflow_name="feature-standard" PiP Support auto=true"
+**User**: `speckit: start_workflow workflow_name="feature-standard" PiP Support auto=true`
 **Action**: Call `start_workflow` with `workflow_name: "feature-standard"`, `context_id: "PiP Support"`, `auto: true`
 
-**User**: "speckit: help comment créer un nouveau workflow ?"
+**User**: `/speckit.help comment créer un nouveau workflow ?`
 **Action**: Call `speckit_help` with `topic: "workflows"`
 
 **User**: "Comment fonctionne spec-kit ?"

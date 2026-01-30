@@ -11,6 +11,7 @@ npm install -g npm@latest
 ```
 
 Puis réessayez:
+
 ```bash
 npx smart-spec-kit-mcp setup
 ```
@@ -36,9 +37,32 @@ pnpm dlx smart-spec-kit-mcp setup
 
 ---
 
-## VS Code: MCP Tools n'apparaissent pas
+## VS Code: Slash Commands n'apparaissent pas
 
-Si les outils Spec-Kit n'apparaissent pas dans Copilot Chat:
+Si les slash commands `/speckit.*` n'apparaissent pas dans Copilot Chat:
+
+1. **Vérifiez les fichiers `.github/prompts/`**:
+   ```bash
+   ls .github/prompts/
+   # Doit afficher: speckit.specify.prompt.md, speckit.plan.prompt.md, etc.
+   ```
+
+2. **Réinstallez si manquants**:
+   ```bash
+   npx smart-spec-kit-mcp setup --force
+   ```
+
+3. **Rechargez VS Code**: `Cmd+Shift+P` (macOS) ou `Ctrl+Shift+P` (Windows/Linux)
+   - Tapez "Reload Window"
+   - Pressez Entrée
+
+4. **Tapez `/speckit.` et attendez** - les commandes apparaissent après quelques secondes
+
+---
+
+## VS Code: MCP Tools ne fonctionnent pas
+
+Si les outils MCP Spec-Kit ne fonctionnent pas dans Copilot Chat:
 
 1. **Rechargez VS Code**: `Cmd+Shift+P` (macOS) ou `Ctrl+Shift+P` (Windows/Linux)
    - Tapez "Reload Window"

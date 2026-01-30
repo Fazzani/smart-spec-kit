@@ -11,7 +11,8 @@ npx smart-spec-kit-mcp setup
 ```
 
 C'est tout ! Cette commande configure automatiquement:
-- ✅ VS Code settings.json (MCP server)
+- ✅ VS Code MCP server (profils et settings)
+- ✅ `.github/prompts/` avec les **slash commands** (`/speckit.*`)
 - ✅ `.github/copilot-instructions.md` (guide Copilot)
 - ✅ `.spec-kit/` avec prompts, templates et workflows
 
@@ -31,7 +32,24 @@ npx smart-spec-kit-mcp setup --dry-run
 
 ## 🎮 Commandes Disponibles
 
-Utilisez ces phrases dans **Copilot Chat**:
+### Slash Commands (Recommandé)
+
+Tapez `/speckit.` dans **Copilot Chat** pour voir la liste:
+
+| Slash Command | Description |
+|---------------|-------------|
+| `/speckit.specify` | Crée une spécification fonctionnelle |
+| `/speckit.plan` | Crée un plan d'implémentation |
+| `/speckit.tasks` | Génère la liste des tâches |
+| `/speckit.implement` | Exécute les tâches d'implémentation |
+| `/speckit.clarify` | Clarifie les requirements ambigus |
+| `/speckit.validate` | Valide la conformité (sécurité, RGPD, etc.) |
+| `/speckit.memory` | Gère la mémoire projet (décisions, conventions...) |
+| `/speckit.help` | Obtient de l'aide sur Spec-Kit |
+
+### Commandes par mots-clés (Alternative)
+
+Vous pouvez aussi utiliser ces phrases:
 
 | Commande | Description |
 |----------|-------------|
@@ -39,10 +57,6 @@ Utilisez ces phrases dans **Copilot Chat**:
 | `speckit: plan` | Crée un plan d'implémentation |
 | `speckit: tasks` | Génère la liste des tâches |
 | `speckit: implement` | Exécute les tâches d'implémentation |
-| `speckit: clarify` | Clarifie les requirements ambigus |
-| `speckit: validate` | Valide la conformité (sécurité, RGPD, etc.) |
-| `speckit: memory` | Gère la mémoire projet (décisions, conventions...) |
-| `speckit: help` | Obtient de l'aide sur Spec-Kit |
 
 ---
 
@@ -53,25 +67,25 @@ Utilisez ces phrases dans **Copilot Chat**:
 Dans Copilot Chat:
 
 ```text
-speckit: spec pour un système d'authentification avec email/password
+/speckit.specify pour un système d'authentification avec email/password
 ```
 
 ### 2. Planifier l'implémentation
 
 ```text
-speckit: plan
+/speckit.plan
 ```
 
 ### 3. Générer les tâches
 
 ```text
-speckit: tasks
+/speckit.tasks
 ```
 
 ### 4. Implémenter
 
 ```text
-speckit: implement
+/speckit.implement
 ```
 
 ---
@@ -109,11 +123,11 @@ Les templates dans `.spec-kit/templates/` définissent le format des documents g
 Demandez à Copilot:
 
 ```text
-speckit: help comment créer un workflow personnalisé ?
+/speckit.help comment créer un workflow personnalisé ?
 ```
 
 ```text
-speckit: help quels sont les templates disponibles ?
+/speckit.help quels sont les templates disponibles ?
 ```
 
 ---
@@ -124,11 +138,17 @@ Après installation:
 
 ```text
 .github/
+├── prompts/                  # Slash commands (/speckit.*)
+│   ├── speckit.specify.prompt.md
+│   ├── speckit.plan.prompt.md
+│   ├── speckit.tasks.prompt.md
+│   └── ...
 └── copilot-instructions.md   # Guide Copilot
 .spec-kit/
-├── prompts/                  # Prompts versionnables
+├── prompts/                  # Prompts MCP (personnalisables)
 ├── templates/                # Templates de documents
 ├── memory/                   # Constitution projet
+├── rules/                    # Règles de validation
 └── workflows/                # Workflows YAML
 specs/                        # Spécifications générées
 ```
@@ -137,11 +157,17 @@ specs/                        # Spécifications générées
 
 ## ⚠️ Dépannage
 
-### Les commandes ne fonctionnent pas
+### Les slash commands n'apparaissent pas
 
-1. Vérifiez que le MCP server est configuré dans VS Code settings
+1. Vérifiez que `.github/prompts/` contient les fichiers `speckit.*.prompt.md`
 2. Rechargez VS Code (`Ctrl+Shift+P` → "Developer: Reload Window")
-3. Testez avec `speckit: help`
+3. Tapez `/speckit.` et attendez la liste
+
+### Les outils MCP ne fonctionnent pas
+
+1. Vérifiez que le MCP server est configuré (Output → GitHub Copilot)
+2. Rechargez VS Code
+3. Testez avec `/speckit.help`
 
 ### Le serveur ne répond pas
 

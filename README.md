@@ -256,15 +256,15 @@ steps:
 Demandez de l'aide directement dans Copilot Chat:
 
 ```text
-speckit: help comment créer un nouveau workflow ?
+/speckit.help comment créer un nouveau workflow ?
 ```
 
 ```text
-speckit: help comment personnaliser les templates ?
+/speckit.help comment personnaliser les templates ?
 ```
 
 ```text
-speckit: help quels sont les agents disponibles ?
+/speckit.help quels sont les agents disponibles ?
 ```
 
 ---
@@ -297,7 +297,7 @@ Pour récupérer automatiquement les work items:
 Puis utilisez:
 
 ```text
-speckit: spec pour le work item #12345
+/speckit.specify pour le work item #12345
 ```
 
 ---
@@ -334,7 +334,7 @@ Pour une documentation détaillée sur tous les outils et fonctionnalités:
 ## 🧪 Développement
 
 ```bash
-git clone https://github.com/anthropic-ai/smart-spec-kit.git
+git clone https://github.com/fazzani/smart-spec-kit.git
 cd smart-spec-kit
 npm install
 npm run build
