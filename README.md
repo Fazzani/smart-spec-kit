@@ -17,7 +17,8 @@ Plateforme d'orchestration automatisée pour le **développement piloté par les
 - [🔧 Personnalisation](#-personnalisation)
 - [❓ Obtenir de l'Aide](#-obtenir-de-laide)
 - [🔗 Intégration Azure DevOps](#-intégration-azure-devops)
-- [📖 Documentation Complète](#-documentation-complète)
+- [�️ Troubleshooting](#-troubleshooting)
+- [�📖 Documentation Complète](#-documentation-complète)
 - [🧪 Développement](#-développement)
 - [📄 License](#-license)
 
@@ -46,8 +47,11 @@ npx smart-spec-kit-mcp setup
 Cette commande configure automatiquement:
 
 - ✅ VS Code settings.json (MCP server)
+- ✅ Tous les profils VS Code (Windows, macOS, Linux)
 - ✅ `.github/copilot-instructions.md` (guide Copilot)
 - ✅ `.spec-kit/` avec prompts, templates et workflows
+
+> **Note macOS**: Si vous avez une erreur `command not found`, assurez-vous que npm/npx est à jour: `npm install -g npm@latest`
 
 ### Option 2: Configuration Manuelle
 
@@ -267,6 +271,22 @@ speckit: spec pour le work item #12345
 
 ---
 
+## �️ Troubleshooting
+
+Pour résoudre les problèmes courants:
+
+- **macOS**: `command not found: smart-spec-kit-mcp`
+  - Essayez: `npm install -g npm@latest` puis `npx smart-spec-kit-mcp setup`
+  - Consultez [TROUBLESHOOTING.md](TROUBLESHOOTING.md) pour plus de solutions
+
+- **VS Code**: Les outils Spec-Kit n'apparaissent pas
+  - Relancez VS Code (Ctrl+Shift+P → "Reload Window")
+  - Consultez [TROUBLESHOOTING.md](TROUBLESHOOTING.md#vs-code-tools-not-appearing)
+
+- **Autres problèmes**: Voir [TROUBLESHOOTING.md](TROUBLESHOOTING.md) complet
+
+---
+
 ## 📖 Documentation Complète
 
 Pour une documentation détaillée sur tous les outils et fonctionnalités:
@@ -276,6 +296,7 @@ Pour une documentation détaillée sur tous les outils et fonctionnalités:
 - **[docs/PACKAGING.md](docs/PACKAGING.md)** - Guide de packaging et distribution
 - **[PROJECT_CONTEXT.md](PROJECT_CONTEXT.md)** - Contexte du projet Spec-Kit
 - **[TASK_QUEUE.md](TASK_QUEUE.md)** - Tâches en cours et prévues
+- **[TROUBLESHOOTING.md](TROUBLESHOOTING.md)** - Guide de dépannage complet
 
 ---
 
