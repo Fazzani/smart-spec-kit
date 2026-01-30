@@ -8,7 +8,7 @@ Plateforme d'orchestration automatisée pour le **développement piloté par les
 ## ✨ Fonctionnalités
 
 - **🤖 Commandes Naturelles**: Utilisez `speckit: spec`, `speckit: plan`, etc. directement dans Copilot Chat
-- **📝 Prompt-as-Code**: Prompts versionnés et personnalisables dans `.spec-kit/prompts/`
+- **📝 Prompts Versionnés**: Prompts personnalisables et versionnables dans `.spec-kit/prompts/`
 - **🔄 Workflows YAML**: Processus personnalisables étape par étape
 - **📋 Templates**: Spécifications fonctionnelles, plans d'implémentation, rapports de bugs
 - **🛡️ Gouvernance Intégrée**: Constitution projet, principes de développement
@@ -26,6 +26,7 @@ npx smart-spec-kit-mcp setup
 ```
 
 Cette commande configure automatiquement:
+
 - ✅ VS Code settings.json (MCP server)
 - ✅ `.github/copilot-instructions.md` (guide Copilot)
 - ✅ `.spec-kit/` avec prompts, templates et workflows
@@ -55,7 +56,7 @@ Puis rechargez VS Code: `Ctrl+Shift+P` → "Developer: Reload Window"
 
 Après installation, votre projet contient:
 
-```
+```text
 votre-projet/
 ├── .github/
 │   └── copilot-instructions.md   # Guide Copilot sur l'utilisation de Spec-Kit
@@ -119,25 +120,25 @@ Utilisez ces phrases dans Copilot Chat pour déclencher les outils MCP:
 
 ### 2. Créer une spécification
 
-```
+```text
 speckit: spec pour un système de notifications push
 ```
 
 ### 3. Planifier l'implémentation
 
-```
+```text
 speckit: plan
 ```
 
 ### 4. Générer les tâches
 
-```
+```text
 speckit: tasks
 ```
 
 ### 5. Implémenter
 
-```
+```text
 speckit: implement
 ```
 
@@ -194,15 +195,15 @@ steps:
 
 Demandez de l'aide directement dans Copilot Chat:
 
-```
+```text
 speckit: help comment créer un nouveau workflow ?
 ```
 
-```
+```text
 speckit: help comment personnaliser les templates ?
 ```
 
-```
+```text
 speckit: help quels sont les agents disponibles ?
 ```
 
@@ -234,7 +235,8 @@ Pour récupérer automatiquement les work items:
 ```
 
 Puis utilisez:
-```
+
+```text
 speckit: spec pour le work item #12345
 ```
 

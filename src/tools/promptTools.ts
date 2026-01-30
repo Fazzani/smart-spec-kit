@@ -1,7 +1,7 @@
 /**
  * Prompt Tools for Spec-Kit
  * 
- * MCP tools that load and execute prompt-as-code files from .spec-kit/prompts/
+ * MCP tools that load and execute customizable prompts from .spec-kit/prompts/
  * These tools are callable via natural language in Copilot Chat.
  */
 
@@ -100,7 +100,7 @@ The memory tool helps you enrich project context:
 
 \`\`\`
 .spec-kit/
-├── prompts/      # Prompt-as-Code files (customize behavior)
+├── prompts/      # Customizable prompts (read by MCP tools)
 ├── templates/    # Document templates (customize format)
 ├── memory/       # Project constitution (your principles)
 └── workflows/    # YAML workflows (multi-step processes)

@@ -45,12 +45,13 @@ speckit_specify → speckit_plan → speckit_tasks → speckit_implement
 
 ```
 .spec-kit/
-├── prompts/           # Prompt-as-code files (read by MCP tools)
+├── prompts/           # Customizable prompts (define command behavior)
 │   ├── specify.md
 │   ├── plan.md
 │   ├── tasks.md
 │   ├── implement.md
-│   └── clarify.md
+│   ├── clarify.md
+│   └── memory.md
 ├── templates/         # Document templates
 │   ├── functional-spec.md
 │   ├── plan-template.md

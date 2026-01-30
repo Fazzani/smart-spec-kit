@@ -4,7 +4,7 @@ This is the comprehensive documentation for Spec-Kit. Copilot can read this file
 
 ## Overview
 
-Spec-Kit is an MCP (Model Context Protocol) server that provides **Prompt-as-Code** functionality for specification-driven development. It integrates with GitHub Copilot in VS Code to guide developers through creating specifications, plans, tasks, and implementation.
+Spec-Kit is an MCP (Model Context Protocol) server that provides **customizable prompts** and workflow orchestration for specification-driven development. It integrates with GitHub Copilot in VS Code to guide developers through creating specifications, plans, tasks, and implementation.
 
 ## Architecture
 
@@ -20,9 +20,9 @@ Spec-Kit is an MCP (Model Context Protocol) server that provides **Prompt-as-Cod
    - Defines command keywords and aliases
 
 3. **Prompts** (`.spec-kit/prompts/`)
-   - Prompt-as-Code files read by MCP tools
+   - Customizable prompt files read by MCP tools
    - Define behavior for each command
-   - Customizable per project
+   - Versioned and maintainable in your project
 
 4. **Templates** (`.spec-kit/templates/`)
    - Document templates for specs, plans, tasks

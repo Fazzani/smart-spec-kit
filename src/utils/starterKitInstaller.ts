@@ -276,7 +276,7 @@ export function formatInstallReport(result: InstallResult, projectPath: string):
   report += "├── .github/\n";
   report += "│   └── copilot-instructions.md  # Instructions for Copilot\n";
   report += "├── .spec-kit/\n";
-  report += "│   ├── prompts/             # Prompt-as-code files (read by MCP)\n";
+  report += "│   ├── prompts/             # Customizable prompts (read by MCP)\n";
   report += "│   │   ├── specify.md\n";
   report += "│   │   ├── plan.md\n";
   report += "│   │   ├── tasks.md\n";

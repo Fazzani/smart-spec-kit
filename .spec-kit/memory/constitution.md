@@ -2,7 +2,7 @@
 
 ## 📋 Présentation
 
-**Spec-Kit** est un serveur MCP (Model Context Protocol) qui fournit une solution de **Prompt-as-Code** pour le développement piloté par les spécifications. Il s'intègre à GitHub Copilot dans VS Code.
+**Spec-Kit** est un serveur MCP (Model Context Protocol) qui fournit une solution de workflows automatisés et de prompts personnalisables pour le développement piloté par les spécifications. Il s'intègre à GitHub Copilot dans VS Code.
 
 ## 🎯 Mission
 
@@ -40,7 +40,7 @@ smart-spec-kit/
 │   │   └── workflowEngine.ts # Moteur d'exécution workflows
 │   ├── tools/
 │   │   ├── orchestrationTools.ts # Outils MCP workflows
-│   │   └── promptTools.ts        # Outils MCP prompt-as-code
+│   │   └── promptTools.ts        # Outils MCP pour les prompts
 │   ├── prompts/
 │   │   └── agents.ts         # Définitions des agents IA
 │   └── utils/

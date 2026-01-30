@@ -121,11 +121,11 @@ speckit: help quels sont les templates disponibles ?
 
 Après installation:
 
-```
+```text
 .github/
 └── copilot-instructions.md   # Guide Copilot
 .spec-kit/
-├── prompts/                  # Prompt-as-Code
+├── prompts/                  # Prompts versionnables
 ├── templates/                # Templates de documents
 ├── memory/                   # Constitution projet
 └── workflows/                # Workflows YAML
@@ -145,20 +145,22 @@ specs/                        # Spécifications générées
 ### Le serveur ne répond pas
 
 1. Vérifiez `.vscode/settings.json`:
-```json
-{
-  "mcp": {
-    "servers": {
-      "spec-kit": {
-        "command": "npx",
-        "args": ["-y", "smart-spec-kit-mcp"]
-      }
+
+    ```json
+    {
+    "mcp": {
+        "servers": {
+        "spec-kit": {
+            "command": "npx",
+            "args": ["-y", "smart-spec-kit-mcp"]
+        }
+        }
     }
-  }
-}
-```
-2. Rechargez VS Code
+    }
+    ```
+
+2. Rechargez VS Code (`Ctrl+Shift+P` → "Developer: Reload Window")
 
 ---
 
-*Spec-Kit v2.0 - Prompt-as-Code pour GitHub Copilot* 🚀
+*Spec-Kit v2.0 - Commandes Spec-Driven pour GitHub Copilot* 🚀
