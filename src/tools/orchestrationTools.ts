@@ -20,6 +20,11 @@ import {
   initLocalConfig,
   getConfigInfo,
 } from "../utils/workflowLoader.js";
+import {
+  installStarterKit,
+  formatInstallReport,
+  isSpecKitInstalled,
+} from "../utils/starterKitInstaller.js";
 
 /**
  * Format StepResult into MCP response with auto-prompting
@@ -285,9 +290,12 @@ Fournir le résultat de l'action précédente dans 'previous_output'.`,
   // Tool: abort_workflow - Cancel active workflow
   server.tool(
     "abort_workflow",
-    "Annule le workflow actif et nettoie la session.",
+    `Annule et supprime le workflow en cours d'exécution.
+    
+Utilisez cet outil uniquement pour ANNULER un workflow, pas pour l'initialiser.
+Pour initialiser spec-kit, utilisez l'outil 'init' à la place.`,
     {
-      session_id: z.string().optional().describe("ID de session à annuler (optionnel)"),
+      session_id: z.string().optional().describe("ID de session à annuler. Laissez vide pour annuler la session active."),
     },
     async ({ session_id }) => {
       try {
@@ -325,45 +333,99 @@ Fournir le résultat de l'action précédente dans 'previous_output'.`,
     }
   );
 
-  // Tool: init - Initialize local spec-kit configuration
+  // Tool: init - Initialize Spec-Kit starter kit in the project
   server.tool(
     "init",
-    `Initialise la configuration Spec-Kit locale dans le projet courant.
+    `INITIALISE le Starter Kit Spec-Kit dans le projet courant.
     
-Crée le dossier .spec-kit/ avec des exemples de workflows et templates personnalisables.
-Utilisez cette commande pour adapter Spec-Kit à votre stack technique.`,
+Installe:
+- .github/prompts/ : Slash commands pour VS Code Copilot (/speckit.specify, /speckit.plan, etc.)
+- .spec-kit/templates/ : Templates de spécifications
+- .spec-kit/memory/ : Constitution et contexte projet
+- specs/ : Dossier pour les spécifications générées
+
+Utiliser cet outil quand l'utilisateur veut:
+- Initialiser spec-kit dans son projet
+- Installer les slash commands Copilot
+- Mettre en place le développement spec-driven`,
+    {
+      force: z.boolean().optional().describe("Écraser les fichiers existants (défaut: false)"),
+    },
+    async ({ force }) => {
+      try {
+        const projectPath = process.cwd();
+        
+        // Check if already installed
+        const status = await isSpecKitInstalled(projectPath);
+        const alreadyInstalled = status.hasPrompts || status.hasTemplates;
+        
+        if (alreadyInstalled && !force) {
+          let message = "# ⚠️ Spec-Kit semble déjà installé\n\n";
+          message += "Éléments détectés:\n";
+          if (status.hasPrompts) message += "- ✅ `.github/prompts/` existe\n";
+          if (status.hasTemplates) message += "- ✅ `.spec-kit/templates/` existe\n";
+          if (status.hasMemory) message += "- ✅ `.spec-kit/memory/` existe\n";
+          if (status.hasSpecs) message += "- ✅ `specs/` existe\n";
+          message += "\nUtilisez `init` avec `force: true` pour réinstaller.";
+          
+          return {
+            content: [{
+              type: "text" as const,
+              text: message,
+            }],
+          };
+        }
+
+        // Install the starter kit
+        const result = await installStarterKit(projectPath, { force: force ?? false });
+        const report = formatInstallReport(result, projectPath);
+
+        return {
+          content: [{
+            type: "text" as const,
+            text: report,
+          }],
+        };
+      } catch (error) {
+        return {
+          content: [{
+            type: "text" as const,
+            text: `❌ Erreur d'installation: ${error instanceof Error ? error.message : String(error)}`,
+          }],
+          isError: true,
+        };
+      }
+    }
+  );
+
+  // Tool: init_project - Initialize local spec-kit configuration (legacy, for custom workflows)
+  server.tool(
+    "init_project",
+    `Initialise la configuration locale pour PERSONNALISER les workflows (avancé).
+    
+Crée .spec-kit/ avec des exemples de workflows personnalisés.
+Pour une installation standard, utilisez l'outil 'init' à la place.`,
     {},
     async () => {
       try {
         await initLocalConfig();
-        const config = getConfigInfo();
 
-        const response = `# ✅ Spec-Kit initialisé!
+        const response = `# ✅ Configuration locale créée!
 
-## Configuration créée
+## Dossier créé
 
 📁 \`.spec-kit/\`
-├── 📁 \`workflows/\` - Vos workflows personnalisés
-│   └── 📄 \`custom-feature.yaml\` - Exemple de workflow
-└── 📁 \`templates/\` - Vos templates personnalisés
-    └── 📄 \`custom-spec.md\` - Exemple de template
-
-## Résolution des assets
-
-Les workflows/templates sont recherchés dans cet ordre:
-1. **Local**: \`.spec-kit/workflows/\` et \`.spec-kit/templates/\`
-2. **Package**: Workflows par défaut (feature-standard, bugfix, etc.)
+├── 📁 \`workflows/\` - Workflows personnalisés
+│   └── 📄 \`custom-feature.yaml\` - Exemple
+└── 📁 \`templates/\` - Templates personnalisés
+    └── 📄 \`custom-spec.md\` - Exemple
 
 ## Prochaines étapes
 
-1. Éditez \`.spec-kit/workflows/custom-feature.yaml\` selon votre stack
-2. Personnalisez \`.spec-kit/templates/custom-spec.md\`
-3. Lancez: \`start_workflow workflow_name="custom-feature" context_id="TEST"\`
+1. Éditez les fichiers selon votre stack technique
+2. Les workflows locaux ont priorité sur les défauts
 
-## Chemins de recherche actuels
-
-- **Projet**: \`${config.projectRoot}\`
-- **Package**: \`${config.packageRoot}\`
+**Conseil**: Utilisez \`init\` pour installer le starter kit complet avec slash commands.
 `;
 
         return {
@@ -386,8 +448,13 @@ Les workflows/templates sont recherchés dans cet ordre:
 
   // Tool: config - Show current configuration
   server.tool(
-    "config",
-    "Affiche la configuration actuelle de Spec-Kit et les chemins de recherche.",
+    "show_config",
+    `Affiche la configuration actuelle de Spec-Kit.
+    
+Montre:
+- Les chemins de recherche des workflows
+- Les chemins de recherche des templates  
+- La liste des workflows disponibles (locaux et package)`,
     {},
     async () => {
       try {

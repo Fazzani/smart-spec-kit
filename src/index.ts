@@ -15,6 +15,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
 import { registerOrchestrationTools } from "./tools/orchestrationTools.js";
+import { registerPromptTools } from "./tools/promptTools.js";
 import { sessionStore } from "./engine/sessionManager.js";
 
 // Server metadata
@@ -33,6 +34,7 @@ function createServer(): McpServer {
   // Register tools
   registerCoreTools(server);
   registerOrchestrationTools(server);
+  registerPromptTools(server);
 
   return server;
 }

@@ -1,125 +1,149 @@
 # 🚀 QUICK-START: Spec-Kit
 
-Démarrez en 2 minutes avec l'orchestration automatisée de spécifications.
+Démarrez en 2 minutes avec Spec-Kit.
 
 ---
 
-## ⚡ Installation Express
+## ⚡ Installation Express (1 commande!)
 
-### Étape 1: Configurer VS Code
-
-Ouvrez les settings JSON: `Ctrl+Shift+P` → "Preferences: Open User Settings (JSON)"
-
-Ajoutez:
-
-```json
-{
-  "mcp": {
-    "servers": {
-      "spec-kit": {
-        "command": "npx",
-        "args": ["-y", "smart-spec-kit-mcp"]
-      }
-    }
-  }
-}
+```bash
+npx smart-spec-kit-mcp setup
 ```
 
-### Étape 2: Recharger VS Code
+C'est tout ! Cette commande configure automatiquement:
+- ✅ VS Code settings.json (MCP server)
+- ✅ `.github/copilot-instructions.md` (guide Copilot)
+- ✅ `.spec-kit/` avec prompts, templates et workflows
 
-`Ctrl+Shift+P` → "Developer: Reload Window"
+Puis rechargez VS Code: `Ctrl+Shift+P` → "Developer: Reload Window"
 
-### Étape 3: Vérifier
+---
 
-Dans Copilot Chat:
+## 🔍 Mode dry-run (prévisualisation)
 
-```text
-Utilise le tool ping de spec-kit
+Pour voir ce qui sera modifié sans rien changer:
+
+```bash
+npx smart-spec-kit-mcp setup --dry-run
 ```
-
-✅ Si vous voyez "pong", c'est prêt!
 
 ---
 
 ## 🎮 Commandes Disponibles
 
-| Commande          | Description                       |
-| ----------------- | --------------------------------- |
-| `start_workflow`  | Démarre un workflow automatisé    |
-| `execute_step`    | Continue à l'étape suivante       |
-| `workflow_status` | Affiche le statut actuel          |
-| `list_workflows`  | Liste les workflows disponibles   |
-| `abort_workflow`  | Annule le workflow en cours       |
-| `init`            | Crée la config locale du projet   |
-| `config`          | Affiche la configuration actuelle |
-| `ping`            | Vérifie que le serveur fonctionne |
+Utilisez ces phrases dans **Copilot Chat**:
+
+| Commande | Description |
+|----------|-------------|
+| `speckit: spec` | Crée une spécification fonctionnelle |
+| `speckit: plan` | Crée un plan d'implémentation |
+| `speckit: tasks` | Génère la liste des tâches |
+| `speckit: implement` | Exécute les tâches d'implémentation |
+| `speckit: clarify` | Clarifie les requirements ambigus |
+| `speckit: help` | Obtient de l'aide sur Spec-Kit |
 
 ---
 
-## 📋 Démarrer un Workflow
+## 📋 Exemple Complet
 
-### Feature Specification
+### 1. Créer une spécification
 
-```text
-@spec-kit start_workflow workflow_name="feature-standard" context_id="12345"
-```
-
-Le serveur prend le contrôle et guide Copilot automatiquement:
-
-1. **Récupère** le work item depuis Azure DevOps
-2. **Génère** la spécification avec SpecAgent
-3. **Planifie** les tâches avec PlanAgent
-4. **Valide** avec GovAgent
-5. **Crée** le fichier de sortie
-
-> À chaque étape, validez avec "OK" pour continuer.
-
-### Bugfix
+Dans Copilot Chat:
 
 ```text
-@spec-kit start_workflow workflow_name="bugfix" context_id="5678"
+speckit: spec pour un système d'authentification avec email/password
 ```
 
-### Feature avec Gouvernance Complète
+### 2. Planifier l'implémentation
 
 ```text
-@spec-kit start_workflow workflow_name="feature-full" context_id="9999"
+speckit: plan
 ```
 
-10 étapes avec validations: RGPD, Sécurité, Architecture, Design System, Tests...
+### 3. Générer les tâches
+
+```text
+speckit: tasks
+```
+
+### 4. Implémenter
+
+```text
+speckit: implement
+```
 
 ---
 
-## 🔧 Personnaliser pour votre Projet
+## 🔧 Personnalisation
 
-### Initialiser la config locale
+### Éditer la constitution du projet
 
-```text
-@spec-kit init
+Le fichier `.spec-kit/memory/constitution.md` définit vos principes:
+
+```markdown
+# Constitution du Projet
+
+## Stack Technique
+- Frontend: React + TypeScript
+- Backend: Node.js + Express
+
+## Principes
+- Clean Architecture
+- Tests obligatoires
 ```
 
-Crée dans votre projet:
+### Modifier les prompts
+
+Les fichiers dans `.spec-kit/prompts/` contrôlent le comportement de chaque commande.
+
+### Adapter les templates
+
+Les templates dans `.spec-kit/templates/` définissent le format des documents générés.
+
+---
+
+## ❓ Besoin d'aide ?
+
+Demandez à Copilot:
 
 ```text
+speckit: help comment créer un workflow personnalisé ?
+```
+
+```text
+speckit: help quels sont les templates disponibles ?
+```
+
+---
+
+## 📚 Structure du Projet
+
+Après installation:
+
+```
+.github/
+└── copilot-instructions.md   # Guide Copilot
 .spec-kit/
-├── workflows/
-│   └── custom-feature.yaml  ← Votre workflow personnalisé
-└── templates/
-    └── custom-spec.md       ← Votre template personnalisé
-```
-
-### Voir la configuration
-
-```text
-@spec-kit config
+├── prompts/                  # Prompt-as-Code
+├── templates/                # Templates de documents
+├── memory/                   # Constitution projet
+└── workflows/                # Workflows YAML
+specs/                        # Spécifications générées
 ```
 
 ---
 
-## 🔗 Ajouter Azure DevOps (optionnel)
+## ⚠️ Dépannage
 
-Pour récupérer automatiquement les work items, ajoutez dans `settings.json`:
+### Les commandes ne fonctionnent pas
 
+1. Vérifiez que le MCP server est configuré dans VS Code settings
+2. Rechargez VS Code (`Ctrl+Shift+P` → "Developer: Reload Window")
+3. Testez avec `speckit: help`
+
+### Le serveur ne répond pas
+
+1. Vérifiez `.vscode/settings.json`:
 ```json
 {
   "mcp": {
@@ -127,105 +151,13 @@ Pour récupérer automatiquement les work items, ajoutez dans `settings.json`:
       "spec-kit": {
         "command": "npx",
         "args": ["-y", "smart-spec-kit-mcp"]
-      },
-      "azure-devops": {
-        "command": "npx",
-        "args": ["-y", "@anthropic-ai/azure-devops-mcp"],
-        "env": {
-          "AZURE_DEVOPS_ORG_URL": "https://dev.azure.com/votre-org",
-          "AZURE_DEVOPS_PAT": "votre-token"
-        }
       }
     }
   }
 }
 ```
-
----
-
-## 📐 Créer un Workflow Custom
-
-Créez `.spec-kit/workflows/mon-workflow.yaml`:
-
-```yaml
-name: mon-workflow
-displayName: "Mon Workflow Custom"
-description: "Description du workflow"
-template: mon-template.md
-defaultAgent: SpecAgent
-
-steps:
-  - id: step-1
-    name: "Première étape"
-    action: fetch_ado
-    description: "Récupère les données"
-    outputs:
-      - workitem_data
-
-  - id: step-2
-    name: "Génération"
-    action: call_agent
-    agent: SpecAgent
-    description: "Génère le contenu"
-    inputs:
-      source: "workitem_data"
-```
-
-### Actions Disponibles
-
-| Action             | Description                          |
-| ------------------ | ------------------------------------ |
-| `fetch_ado`        | Récupère données depuis Azure DevOps |
-| `generate_content` | Génère du contenu avec un agent      |
-| `call_agent`       | Invoque un agent spécifique          |
-| `review`           | Validation/review avec GovAgent      |
-| `create_file`      | Crée un fichier de sortie            |
-
----
-
-## ⚠️ Dépannage
-
-### Workflow bloqué
-
-```text
-@spec-kit workflow_status
-@spec-kit execute_step
-```
-
-### Réinitialiser
-
-```text
-@spec-kit abort_workflow
-@spec-kit start_workflow workflow_name="feature-standard" context_id="12345"
-```
-
-### Le serveur ne répond pas
-
-1. Vérifiez la config dans `settings.json`
 2. Rechargez VS Code
-3. Testez avec `@spec-kit ping`
 
 ---
 
-## 📚 Référence Rapide
-
-```bash
-# Feature simple
-start_workflow workflow_name="feature-standard" context_id="12345"
-
-# Feature complète avec gouvernance
-start_workflow workflow_name="feature-full" context_id="12345"
-
-# Bugfix
-start_workflow workflow_name="bugfix" context_id="12345"
-
-# Initialiser config locale
-init
-
-# Voir config
-config
-```
-
----
-
-*Spec-Kit v2.0 - Orchestration Automatisée pour GitHub Copilot* 🚀
+*Spec-Kit v2.0 - Prompt-as-Code pour GitHub Copilot* 🚀

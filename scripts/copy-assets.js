@@ -1,6 +1,6 @@
 /**
  * Copy assets script
- * Ensures workflows and templates are available in dist for npm publish
+ * Ensures workflows, templates, starter-kit, and prompts are available in dist for npm publish
  */
 
 import * as fs from 'node:fs';
@@ -13,7 +13,18 @@ const rootDir = path.resolve(__dirname, '..');
 // Assets are at root level, no need to copy to dist
 // This script ensures they exist and logs info
 
-const assets = ['workflows', 'templates'];
+const assets = [
+  'workflows', 
+  'templates',
+  'starter-kit/prompts',
+  'starter-kit/templates',
+  'starter-kit/memory',
+];
+
+// Single files to verify
+const singleFiles = [
+  'starter-kit/copilot-instructions.md',
+];
 
 console.log('📦 Verifying assets for packaging...\n');
 
@@ -26,6 +37,16 @@ for (const asset of assets) {
     files.forEach(f => console.log(`   - ${f}`));
   } else {
     console.log(`⚠️  ${asset}/ not found`);
+  }
+}
+
+for (const file of singleFiles) {
+  const filePath = path.join(rootDir, file);
+  
+  if (fs.existsSync(filePath)) {
+    console.log(`✅ ${file}`);
+  } else {
+    console.log(`⚠️  ${file} not found`);
   }
 }
 
