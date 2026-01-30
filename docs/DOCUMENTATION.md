@@ -50,6 +50,7 @@ Spec-Kit is an MCP (Model Context Protocol) server that provides **Prompt-as-Cod
 **Triggers**: `speckit: spec`, `speckit: specify`, `créer une spec`
 
 **Parameters** (all optional):
+
 - `requirements`: What you want to build. Can be:
   - A feature description: "user authentication with email/password"
   - A user story: "As a user, I want to..."
@@ -57,13 +58,15 @@ Spec-Kit is an MCP (Model Context Protocol) server that provides **Prompt-as-Cod
 - `contextId`: ID for the specification filename
 
 **Examples**:
-```
+
+```text
 speckit: spec
 speckit: spec pour un système de notifications push
 speckit: spec user authentication with OAuth
 ```
 
 **Behavior**:
+
 1. Loads prompt from `.spec-kit/prompts/specify.md`
 2. Loads constitution from `.spec-kit/memory/constitution.md`
 3. Loads template from `.spec-kit/templates/functional-spec.md`
@@ -77,15 +80,18 @@ speckit: spec user authentication with OAuth
 **Triggers**: `speckit: plan`, `planifier`, `créer un plan`
 
 **Parameters** (all optional):
+
 - `specPath`: Path to specification file (auto-detects most recent if not provided)
 
 **Examples**:
-```
+
+```text
 speckit: plan
 speckit: plan pour la spec specs/auth-spec.md
 ```
 
 **Behavior**:
+
 1. Finds the most recent specification in `specs/`
 2. Loads prompt from `.spec-kit/prompts/plan.md`
 3. Returns context for generating the plan
@@ -98,15 +104,18 @@ speckit: plan pour la spec specs/auth-spec.md
 **Triggers**: `speckit: tasks`, `générer les tâches`, `créer les tâches`
 
 **Parameters** (all optional):
+
 - `planPath`: Path to plan file (auto-detects most recent if not provided)
 
 **Examples**:
-```
+
+```text
 speckit: tasks
 speckit: générer les tâches
 ```
 
 **Behavior**:
+
 1. Finds the most recent plan in `specs/`
 2. Loads prompt from `.spec-kit/prompts/tasks.md`
 3. Returns context for generating tasks
@@ -119,16 +128,19 @@ speckit: générer les tâches
 **Triggers**: `speckit: implement`, `implémenter`, `coder`
 
 **Parameters** (all optional):
+
 - `taskId`: Specific task ID to implement (picks next pending if not provided)
 
 **Examples**:
-```
+
+```text
 speckit: implement
 speckit: implement task 3
 speckit: implémenter la tâche 5
 ```
 
 **Behavior**:
+
 1. Loads tasks from `specs/tasks.md`
 2. Finds next pending task (or specified task)
 3. Loads prompt from `.spec-kit/prompts/implement.md`
@@ -142,16 +154,19 @@ speckit: implémenter la tâche 5
 **Triggers**: `speckit: clarify`, `clarifier`, `préciser`
 
 **Parameters** (all optional):
+
 - `specPath`: Path to specification (auto-detects if not provided)
 - `questions`: Specific questions to clarify
 
 **Examples**:
-```
+
+```text
 speckit: clarify
 speckit: clarifier les critères d'acceptation
 ```
 
 **Behavior**:
+
 1. Finds `[NEEDS CLARIFICATION]` markers
 2. Loads prompt from `.spec-kit/prompts/clarify.md`
 3. Returns targeted questions for stakeholders
@@ -163,20 +178,65 @@ speckit: clarifier les critères d'acceptation
 **Triggers**: `speckit: help`, `aide sur speckit`
 
 **Parameters** (all optional):
+
 - `topic`: Specific topic to get help on
 
 **Examples**:
-```
+
+```text
 speckit: help
 speckit: help workflows
 speckit: help comment créer un template ?
 ```
 
 **Topics covered**:
+
 - Commands and usage
 - Customization (prompts, templates, workflows)
 - Troubleshooting
 - Architecture
+
+### speckit_memory
+
+**Purpose**: Manage project memory and context in `.spec-kit/memory/`.
+
+**Triggers**: `speckit: memory`, `enrichir la mémoire`, `ajouter au contexte`
+
+**Parameters** (all optional):
+
+- `action`: Action to perform
+  - `add` - Add new memory file (default)
+  - `update` - Update existing memory file
+  - `list` - List all memory files
+  - `auto` - Auto-enrich from current context
+- `fileName`: Name of the memory file (without .md)
+- `content`: Content to add
+- `category`: Category for organizing (`decisions`, `conventions`, `architecture`, `learnings`, `context`)
+
+**Examples**:
+
+```text
+speckit: memory list
+speckit: memory add decisions
+speckit: memory auto
+speckit: memory update conventions
+speckit: memory ajouter une décision technique
+```
+
+**Memory Categories**:
+
+- **decisions** - Technical and architectural decisions
+- **conventions** - Coding standards and patterns
+- **architecture** - System design and structure  
+- **learnings** - Lessons learned and best practices
+- **context** - Project background and domain knowledge
+- **glossary** - Domain terms and definitions
+
+**Behavior**:
+
+1. Lists, creates, or updates files in `.spec-kit/memory/`
+2. Structures content with dates and context
+3. Auto mode analyzes conversation to extract insights
 
 ---
 
@@ -250,12 +310,14 @@ steps:
 ```
 
 **Available actions**:
+
 - `call_agent` - Call an AI agent
 - `fetch_ado` - Fetch Azure DevOps work item
 - `save_artifact` - Save to file
 - `validate` - Validate output
 
 **Available agents**:
+
 - `SpecAgent` - Writes specifications
 - `PlanAgent` - Creates plans
 - `GovAgent` - Validates governance
@@ -298,6 +360,7 @@ The constitution defines project principles. Edit `.spec-kit/memory/constitution
 ### Commands Not Working
 
 1. **Check MCP configuration** in `.vscode/settings.json`:
+
 ```json
 {
   "mcp": {
@@ -318,6 +381,7 @@ The constitution defines project principles. Edit `.spec-kit/memory/constitution
 ### Setup Not Finding Files
 
 Run setup with the project path:
+
 ```bash
 npx smart-spec-kit-mcp setup --project /path/to/project
 ```
@@ -327,6 +391,7 @@ npx smart-spec-kit-mcp setup --project /path/to/project
 1. Check files exist in `.spec-kit/prompts/`
 2. Ensure valid Markdown format
 3. Run setup again to reinstall:
+
 ```bash
 npx smart-spec-kit-mcp setup --project . --force
 ```
@@ -345,6 +410,7 @@ npx smart-spec-kit-mcp setup --project . --force
 Standard feature specification workflow.
 
 **Steps**:
+
 1. Fetch requirements
 2. Generate specification
 3. Create plan
@@ -356,6 +422,7 @@ Standard feature specification workflow.
 Complete workflow with governance.
 
 **Steps**:
+
 1. Fetch requirements
 2. Generate specification
 3. Security review
@@ -372,6 +439,7 @@ Complete workflow with governance.
 Bug fix workflow.
 
 **Steps**:
+
 1. Fetch bug report
 2. Root cause analysis
 3. Fix plan

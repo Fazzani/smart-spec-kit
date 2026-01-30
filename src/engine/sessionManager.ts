@@ -50,6 +50,8 @@ export interface WorkflowSession {
   currentStepId: string;
   /** Session status */
   status: "active" | "paused" | "completed" | "failed";
+  /** Auto mode - proceed without user approval */
+  autoMode: boolean;
   /** Collected data from all steps */
   data: WorkflowData;
   /** Timestamp of session creation */
@@ -119,7 +121,8 @@ class SessionStore {
   async create(
     workflowName: string,
     contextId: string,
-    firstStepId: string
+    firstStepId: string,
+    autoMode: boolean = false
   ): Promise<WorkflowSession> {
     const sessionId = this.generateSessionId();
     const now = new Date().toISOString();
@@ -131,6 +134,7 @@ class SessionStore {
       currentStepIndex: 0,
       currentStepId: firstStepId,
       status: "active",
+      autoMode,
       data: {},
       createdAt: now,
       updatedAt: now,

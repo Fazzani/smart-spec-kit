@@ -382,9 +382,9 @@ Exécutez sans --dry-run pour appliquer les changements.
   
   console.log(`
 ${colors.green}╔═══════════════════════════════════════════════════════════╗
-║                                                           ║
+║                                                             ║
 ║   ${colors.bold}✅ Installation terminée!${colors.reset}${colors.green}                               ║
-║                                                           ║
+║                                                             ║
 ╚═══════════════════════════════════════════════════════════╝${colors.reset}
 
 ${colors.bold}Prochaines étapes:${colors.reset}
@@ -397,25 +397,36 @@ ${colors.bold}Prochaines étapes:${colors.reset}
 
 3. ${colors.cyan}Utilisez les commandes speckit dans Copilot Chat:${colors.reset}
 
-${colors.bold}Commandes disponibles:${colors.reset}
-   speckit: spec       Créer une spécification (ou description libre)
+${colors.bold}Commandes simples (recommandé):${colors.reset}
+   speckit: spec       Créer une spécification (description libre)
    speckit: plan       Créer le plan technique
    speckit: tasks      Générer les tâches
    speckit: implement  Implémenter les tâches
    speckit: clarify    Clarifier les requirements
+   speckit: memory     Gérer la mémoire projet (décisions, conventions...)
    speckit: help       Obtenir de l'aide sur Spec-Kit
+
+${colors.bold}Workflows automatisés (optionnel):${colors.reset}
+   speckit: start_workflow workflow_name="feature-standard"
+   speckit: start_workflow workflow_name="bugfix"
+   speckit: start_workflow workflow_name="feature-full" auto=true  ${colors.cyan}← Mode AUTO${colors.reset}
+
+   auto=true : enchaîne les étapes sans approbation
+   Les workflows guident automatiquement toutes les étapes.
+   Voir .spec-kit/workflows/ pour les personnaliser.
 
 ${colors.bold}Exemples:${colors.reset}
    speckit: spec pour un système d'authentification
    speckit: plan
+   speckit: start_workflow workflow_name="feature-standard" PiP Support auto=true
    speckit: help comment créer un workflow ?
 
 ${colors.bold}Structure créée:${colors.reset}
    .github/copilot-instructions.md  Instructions pour Copilot
-   .spec-kit/prompts/               Prompts chargés par MCP
-   .spec-kit/templates/             Templates de spécifications
+   .spec-kit/prompts/               Prompts (personnalisables)
+   .spec-kit/templates/             Templates de documents
    .spec-kit/memory/                Constitution du projet
-   .spec-kit/workflows/             Workflows automatisés
+   .spec-kit/workflows/             Workflows YAML (optionnel)
    specs/                           Spécifications générées
 
 ${colors.blue}Documentation: https://github.com/fazzani/smart-spec-kit${colors.reset}

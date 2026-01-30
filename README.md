@@ -92,6 +92,7 @@ Utilisez ces phrases dans Copilot Chat pour déclencher les outils MCP:
 | `speckit: tasks` | `générer les tâches` | Génère la liste des tâches |
 | `speckit: implement` | `implémenter`, `coder` | Exécute les tâches |
 | `speckit: clarify` | `clarifier`, `préciser` | Clarifie les requirements ambigus |
+| `speckit: memory` | `enrichir la mémoire`, `ajouter au contexte` | Gère la mémoire projet |
 | `speckit: help` | `aide sur speckit` | Obtient de l'aide sur Spec-Kit |
 
 ---

@@ -37,6 +37,13 @@ const HelpArgsSchema = z.object({
   topic: z.string().optional().describe("The topic to get help on. Examples: 'workflows', 'templates', 'prompts', 'customization', 'troubleshooting'."),
 });
 
+const MemoryArgsSchema = z.object({
+  action: z.enum(["add", "update", "list", "auto"]).optional().describe("Action: 'add' (add new memory file), 'update' (update existing), 'list' (show all memory files), 'auto' (auto-enrich from context). Default: 'add'"),
+  fileName: z.string().optional().describe("Name of the memory file (without .md extension). Examples: 'decisions', 'architecture', 'conventions'"),
+  content: z.string().optional().describe("Content to add or update in the memory file"),
+  category: z.string().optional().describe("Category for organizing memory: 'decisions', 'architecture', 'conventions', 'learnings', 'context'. Default: inferred from fileName"),
+});
+
 /**
  * Load documentation from package
  */
@@ -70,7 +77,17 @@ All commands are conversational - parameters are optional. Just type the command
 | \`speckit: tasks\` | Generate task breakdown | \`speckit: tasks\` |
 | \`speckit: implement\` | Implement tasks | \`speckit: implement\` or \`speckit: implement task 3\` |
 | \`speckit: clarify\` | Clarify requirements | \`speckit: clarify\` |
+| \`speckit: memory\` | Manage project memory | \`speckit: memory list\` or \`speckit: memory auto\` |
 | \`speckit: help\` | Get help | \`speckit: help workflows\` |
+
+## Memory Management
+
+The memory tool helps you enrich project context:
+
+- \`speckit: memory list\` - Show all memory files
+- \`speckit: memory add decisions\` - Add a new decision
+- \`speckit: memory auto\` - Auto-enrich from conversation
+- \`speckit: memory update conventions\` - Update conventions
 
 ## Quick Start
 
@@ -629,6 +646,219 @@ You can also ask specific questions like:
 - "speckit: help comment créer un nouveau workflow ?"
 - "speckit: help how to customize templates?"
 - "speckit: help quels agents sont disponibles ?"`,
+        }],
+      };
+    }
+  );
+
+  // speckit_memory - Manage project memory/context
+  server.tool(
+    "speckit_memory",
+    "Manage project memory and context in .spec-kit/memory/. Use this to add learnings, decisions, conventions, or auto-enrich the project context. Triggers: 'speckit: memory', 'enrichir la mémoire', 'ajouter au contexte'.",
+    MemoryArgsSchema.shape,
+    async ({ action = "add", fileName, content, category }) => {
+      const projectPath = process.cwd();
+      const memoryDir = path.join(projectPath, ".spec-kit", "memory");
+      
+      // Check setup
+      const setup = await checkSetup(projectPath);
+      if (!setup.ok) {
+        return {
+          content: [{
+            type: "text" as const,
+            text: `## ⚠️ Spec-Kit Setup Required\n\nMissing: ${setup.missing.join(", ")}\n\nRun \`npx smart-spec-kit-mcp setup\` to initialize Spec-Kit in this project.`,
+          }],
+        };
+      }
+
+      // Action: list - Show all memory files
+      if (action === "list") {
+        try {
+          const files = await fs.readdir(memoryDir);
+          const mdFiles = files.filter(f => f.endsWith(".md"));
+          
+          let fileList = "";
+          for (const file of mdFiles) {
+            const filePath = path.join(memoryDir, file);
+            const stat = await fs.stat(filePath);
+            const contentPreview = await fs.readFile(filePath, "utf-8");
+            const lines = contentPreview.split("\n").slice(0, 3).join("\n");
+            fileList += `### 📄 ${file}\n*Modified: ${stat.mtime.toLocaleDateString()}*\n\`\`\`\n${lines}...\n\`\`\`\n\n`;
+          }
+          
+          return {
+            content: [{
+              type: "text" as const,
+              text: `## 🧠 Project Memory Files
+
+**Location:** \`.spec-kit/memory/\`
+
+${mdFiles.length === 0 ? "*No memory files found. Use \`speckit: memory add\` to create one.*" : fileList}
+
+---
+
+## Available Actions
+
+- **List**: \`speckit: memory list\`
+- **Add**: \`speckit: memory add decisions\` - Create a new memory file
+- **Update**: \`speckit: memory update constitution\` - Update existing file
+- **Auto**: \`speckit: memory auto\` - Auto-enrich from current context`,
+            }],
+          };
+        } catch (error) {
+          return {
+            content: [{
+              type: "text" as const,
+              text: `❌ Error listing memory files: ${error instanceof Error ? error.message : String(error)}`,
+            }],
+            isError: true,
+          };
+        }
+      }
+
+      // Action: auto - Auto-enrich memory from context
+      if (action === "auto") {
+        const constitution = await loadConstitution(projectPath);
+        
+        return {
+          content: [{
+            type: "text" as const,
+            text: `## 🤖 Auto-Enrich Project Memory
+
+**Mode:** Automatic context learning
+
+---
+
+## Current Constitution
+
+${constitution || "*No constitution found*"}
+
+---
+
+## Copilot Instructions
+
+Analyze the current conversation and project context to identify:
+
+1. **Decisions** - Technical or architectural decisions made
+2. **Conventions** - Coding conventions or patterns observed
+3. **Learnings** - Lessons learned or best practices discovered
+4. **Architecture** - System architecture insights
+
+For each insight found:
+1. Determine the appropriate memory file (or create new one)
+2. Format as structured markdown
+3. Save to \`.spec-kit/memory/{category}.md\`
+
+### Memory File Format
+
+\`\`\`markdown
+# {Category} - {Project Name}
+
+## Entry: {Date}
+**Context:** {Brief context}
+**Decision/Learning:** {Description}
+**Rationale:** {Why this was decided/learned}
+\`\`\`
+
+After saving, confirm what was added to memory.`,
+          }],
+        };
+      }
+
+      // Action: add or update
+      const effectiveAction = action || "add";
+      const effectiveFileName = fileName || category || "notes";
+      const memoryFilePath = path.join(memoryDir, `${effectiveFileName}.md`);
+      
+      // Check if file exists for context
+      let existingContent = "";
+      let fileExists = false;
+      try {
+        existingContent = await fs.readFile(memoryFilePath, "utf-8");
+        fileExists = true;
+      } catch {
+        fileExists = false;
+      }
+
+      // Load prompt for memory enrichment
+      const memoryPrompt = await loadPrompt(projectPath, "memory");
+      const constitution = await loadConstitution(projectPath);
+
+      // Determine suggested categories
+      const suggestedCategories = [
+        "**decisions** - Technical and architectural decisions",
+        "**conventions** - Coding standards and patterns",
+        "**architecture** - System design and structure",
+        "**learnings** - Lessons learned and best practices",
+        "**context** - Project background and domain knowledge",
+        "**glossary** - Domain terms and definitions",
+      ];
+
+      return {
+        content: [{
+          type: "text" as const,
+          text: `## 🧠 ${effectiveAction === "add" ? "Add to" : "Update"} Project Memory
+
+**File:** \`.spec-kit/memory/${effectiveFileName}.md\`
+**Status:** ${fileExists ? "📝 Exists (will append/update)" : "✨ New file (will create)"}
+
+${content ? `**Content to add:**\n\`\`\`\n${content}\n\`\`\`` : "**Content:** *Copilot will ask what to add*"}
+
+---
+
+${existingContent ? `## Current Content\n\n\`\`\`markdown\n${existingContent.slice(0, 1000)}${existingContent.length > 1000 ? "\n...(truncated)" : ""}\n\`\`\`\n\n---\n\n` : ""}
+
+${memoryPrompt ? `## Memory Prompt Instructions\n\n${memoryPrompt}\n\n---\n\n` : ""}
+
+## Suggested Memory Categories
+
+${suggestedCategories.map(c => `- ${c}`).join("\n")}
+
+---
+
+## Copilot Instructions
+
+${content ? `
+1. Read the content provided above
+2. Format it appropriately for the memory file
+3. ${fileExists ? "Append to" : "Create"} the file \`.spec-kit/memory/${effectiveFileName}.md\`
+4. Use proper markdown structure with dates and context
+5. Confirm what was saved
+` : `
+1. Ask the user what they want to add to memory
+2. Determine the appropriate category/file
+3. Format the content as structured markdown
+4. Save to \`.spec-kit/memory/{filename}.md\`
+5. Confirm what was saved
+
+Example formats:
+
+### For Decisions:
+\`\`\`markdown
+## Decision: {Title}
+**Date:** ${new Date().toISOString().split("T")[0]}
+**Context:** {Why this decision was needed}
+**Decision:** {What was decided}
+**Consequences:** {Impact of this decision}
+\`\`\`
+
+### For Conventions:
+\`\`\`markdown
+## Convention: {Title}
+**Applies to:** {Scope}
+**Rule:** {The convention}
+**Example:** {Code example}
+\`\`\`
+
+### For Learnings:
+\`\`\`markdown
+## Learning: {Title}
+**Date:** ${new Date().toISOString().split("T")[0]}
+**Context:** {Situation}
+**Insight:** {What was learned}
+**Application:** {How to apply it}
+\`\`\`
+`}`,
         }],
       };
     }

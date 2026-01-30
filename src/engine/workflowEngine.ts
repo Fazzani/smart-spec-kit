@@ -57,7 +57,8 @@ export interface StepResult {
  */
 export async function startWorkflow(
   workflowName: string,
-  contextId: string
+  contextId: string,
+  autoMode: boolean = false
 ): Promise<StepResult> {
   // Load workflow definition
   const workflow = await loadWorkflow(workflowName);
@@ -67,8 +68,8 @@ export async function startWorkflow(
     throw new Error(`Workflow "${workflowName}" has no steps defined`);
   }
 
-  // Create session
-  const session = await sessionStore.create(workflowName, contextId, firstStep.id);
+  // Create session with auto mode
+  const session = await sessionStore.create(workflowName, contextId, firstStep.id, autoMode);
 
   // Generate the first step action
   return generateStepAction(session, workflow, 0);

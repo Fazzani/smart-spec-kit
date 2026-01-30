@@ -13,6 +13,7 @@ When the user mentions **"speckit:"** followed by a command, or uses these keywo
 | `speckit: tasks`, `générer les tâches`, `créer les tâches` | `speckit_tasks` | Generate task breakdown |
 | `speckit: implement`, `implémenter`, `coder` | `speckit_implement` | Implement tasks |
 | `speckit: clarify`, `clarifier`, `préciser` | `speckit_clarify` | Clarify requirements |
+| `speckit: memory`, `enrichir la mémoire`, `ajouter au contexte` | `speckit_memory` | Manage project memory |
 | `speckit: help`, `aide sur speckit`, questions about spec-kit | `speckit_help` | Get help and documentation |
 
 ## Getting Help
@@ -78,6 +79,17 @@ After calling a spec-kit tool, follow the instructions in the tool response. The
 - Specific instructions for what to generate
 - Suggested next step
 
+## Automated Workflows (Optional)
+
+For multi-step automation, use `start_workflow`:
+
+| User Says | Action |
+|-----------|--------|
+| `speckit: start_workflow workflow_name="feature-standard" PiP Support` | Start feature workflow for PiP Support |
+| `speckit: start_workflow workflow_name="bugfix" auto=true` | Start bugfix workflow in AUTO mode |
+
+**Auto Mode** (`auto=true`): Proceeds through all steps without asking for user approval. Default is `false` (manual approval required).
+
 ## Example Interactions
 
 **User**: "speckit: créer une spec pour un système de notifications push"
@@ -88,6 +100,18 @@ After calling a spec-kit tool, follow the instructions in the tool response. The
 
 **User**: "speckit: implement task 3"
 **Action**: Call `speckit_implement` with `taskId: "3"`
+
+**User**: "speckit: memory list"
+**Action**: Call `speckit_memory` with `action: "list"`
+
+**User**: "speckit: memory ajouter une décision technique"
+**Action**: Call `speckit_memory` with `action: "add"`, `category: "decisions"`
+
+**User**: "speckit: memory auto"
+**Action**: Call `speckit_memory` with `action: "auto"` to auto-enrich from context
+
+**User**: "speckit: start_workflow workflow_name="feature-standard" PiP Support auto=true"
+**Action**: Call `start_workflow` with `workflow_name: "feature-standard"`, `context_id: "PiP Support"`, `auto: true`
 
 **User**: "speckit: help comment créer un nouveau workflow ?"
 **Action**: Call `speckit_help` with `topic: "workflows"`

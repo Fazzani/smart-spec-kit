@@ -29,7 +29,7 @@ import {
 /**
  * Format StepResult into MCP response with auto-prompting
  */
-function formatStepResponse(result: Awaited<ReturnType<typeof executeStep>>): string {
+function formatStepResponse(result: Awaited<ReturnType<typeof executeStep>>, autoMode: boolean = false): string {
   let response = result.userMessage + "\n\n";
 
   response += "---\n\n";
@@ -42,7 +42,9 @@ function formatStepResponse(result: Awaited<ReturnType<typeof executeStep>>): st
     response += "## 🤖 Action Suivante\n\n";
     response += `**${result.nextAction.description}**\n\n`;
 
-    if (result.nextAction.requiresApproval) {
+    if (autoMode) {
+      response += "🚀 **Mode AUTO activé** - Passage automatique à l'étape suivante...\n\n";
+    } else if (result.nextAction.requiresApproval) {
       response += "⚠️ *Cette action nécessite votre approbation. Tapez 'OK' ou 'Continuer' pour procéder.*\n\n";
     }
 
@@ -51,8 +53,13 @@ function formatStepResponse(result: Awaited<ReturnType<typeof executeStep>>): st
       response += result.nextAction.copilotInstruction;
     }
 
-    if (result.nextAction.confirmationPrompt) {
+    if (result.nextAction.confirmationPrompt && !autoMode) {
       response += "\n\n" + result.nextAction.confirmationPrompt;
+    }
+
+    // In auto mode, add instruction to continue immediately
+    if (autoMode) {
+      response += "\n\n---\n\n**⚡ AUTO MODE:** Exécutez immédiatement l'action ci-dessus puis appelez `execute_step` pour continuer.";
     }
   }
 
@@ -67,17 +74,24 @@ export function registerOrchestrationTools(server: McpServer): void {
   // Tool: start_workflow - Start automated workflow execution
   server.tool(
     "start_workflow",
-    `Démarre l'exécution automatique d'un workflow. 
+    `Démarre l'exécution automatique d'un workflow multi-étapes. 
     
 Le serveur prend le contrôle et guide Copilot à travers chaque étape.
 L'utilisateur n'a qu'à valider les actions proposées.
 
-Workflows disponibles: feature-standard, feature-full, bugfix`,
+Workflows disponibles: feature-standard, feature-full, bugfix
+
+Note: Les workflows sont optionnels. Pour une utilisation simple, préférez les commandes directes:
+- speckit: spec
+- speckit: plan
+- speckit: tasks
+- speckit: implement`,
     {
       workflow_name: z.string().describe("Nom du workflow (ex: 'feature-standard', 'bugfix')"),
-      context_id: z.string().describe("Identifiant du contexte - généralement l'ID du work item Azure DevOps"),
+      context_id: z.string().optional().describe("Identifiant optionnel du contexte - peut être l'ID d'un work item Azure DevOps ou une description courte"),
+      auto: z.boolean().optional().default(false).describe("Mode automatique - enchaîne les étapes sans demander d'approbation (défaut: false)"),
     },
-    async ({ workflow_name, context_id }) => {
+    async ({ workflow_name, context_id, auto }) => {
       try {
         // Validate workflow exists
         const workflows = await listWorkflows();
@@ -91,15 +105,20 @@ Workflows disponibles: feature-standard, feature-full, bugfix`,
           };
         }
 
+        // Generate context_id if not provided
+        const effectiveContextId = context_id || `session-${Date.now()}`;
+        const autoMode = auto ?? false;
+
         // Start the workflow
-        const result = await startWorkflow(workflow_name, context_id);
+        const result = await startWorkflow(workflow_name, effectiveContextId, autoMode);
         const workflow = await loadWorkflow(workflow_name);
 
         const header = `
 # 🚀 Workflow Démarré: ${workflow.displayName}
 
 **Session ID:** \`${result.sessionId}\`
-**Context:** \`${context_id}\`
+${context_id ? `**Context:** \`${context_id}\`` : ""}
+${autoMode ? "**Mode:** 🚀 AUTO (enchaînement automatique)" : "**Mode:** Manuel (approbation requise)"}
 **Étapes:** ${workflow.steps.length}
 
 ---
@@ -108,7 +127,7 @@ Workflows disponibles: feature-standard, feature-full, bugfix`,
         return {
           content: [{
             type: "text" as const,
-            text: header + formatStepResponse(result),
+            text: header + formatStepResponse(result, autoMode),
           }],
         };
       } catch (error) {
@@ -162,13 +181,17 @@ Fournir le résultat de l'action précédente dans 'previous_output'.`,
           }
         }
 
+        // Get session to check autoMode
+        const session = sessionStore.get(sessionId);
+        const autoMode = session?.autoMode ?? false;
+
         // Execute next step
         const result = await executeStep(sessionId, parsedOutput);
 
         return {
           content: [{
             type: "text" as const,
-            text: formatStepResponse(result),
+            text: formatStepResponse(result, autoMode),
           }],
         };
       } catch (error) {

@@ -28,3 +28,5 @@ coverage/
 
 # Spec-Kit sessions (auto-generated)
 .spec-kit-sessions/
+*.gz
+*.gz.*
