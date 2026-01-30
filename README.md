@@ -1,231 +1,234 @@
 # 🚀 Spec-Kit MCP Server
 
-An AI-driven specification platform using **Model Context Protocol (MCP)** for VS Code & GitHub Copilot.
+[![npm version](https://img.shields.io/npm/v/smart-spec-kit-mcp.svg)](https://www.npmjs.com/package/smart-spec-kit-mcp)
+[![CI/CD](https://github.com/anthropic-ai/smart-spec-kit/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/anthropic-ai/smart-spec-kit/actions/workflows/ci-cd.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-Transform Azure DevOps work items into comprehensive specification documents through guided workflows and intelligent agents.
+Plateforme d'orchestration automatisée pour transformer vos work items Azure DevOps en spécifications complètes via **GitHub Copilot**.
 
-## ✨ Features
+## ✨ Fonctionnalités
 
-- **🔄 Workflow Engine**: YAML-defined workflows guide the specification process step-by-step
-- **🤖 AI Agents**: Specialized agents (SpecAgent, PlanAgent, GovAgent, TestAgent) for different tasks
-- **📝 Template System**: Markdown templates with auto-fill capabilities
-- **🔗 Azure DevOps Integration**: Works alongside the ADO MCP server for seamless data access
-- **🎯 GitHub Copilot Native**: Designed specifically for VS Code + Copilot Chat
+- **🤖 Orchestration Automatisée**: Un seul prompt, Copilot fait le reste
+- **🔄 Workflows YAML**: Processus personnalisables étape par étape
+- **🛡️ Gouvernance Intégrée**: RGPD, Sécurité, Architecture, Design System
+- **📝 Templates**: Spécifications, bugfix reports, documentation
+- **🔗 Azure DevOps**: Intégration native via MCP
 
-## 📦 Installation
+---
 
-### Prerequisites
+## ⚡ Installation
 
-- Node.js 18+ (LTS recommended)
-- VS Code with GitHub Copilot extension
-- Azure DevOps MCP server (optional, for ADO integration)
+### Via NPX (Recommandé - Zero Config)
 
-### Setup
-
-1. **Clone and build the project:**
-
-```bash
-git clone <repository-url>
-cd spec-kit-mcp
-npm install
-npm run build
-```
-
-2. **Configure VS Code:**
-
-Open VS Code Settings (JSON) and add the Spec-Kit server to your MCP configuration:
+Ajoutez dans VS Code `settings.json` (`Ctrl+Shift+P` → "Preferences: Open User Settings (JSON)"):
 
 ```json
 {
   "mcp": {
     "servers": {
       "spec-kit": {
-        "command": "node",
-        "args": ["D:\\path\\to\\spec-kit-mcp\\dist\\index.js"]
+        "command": "npx",
+        "args": ["-y", "smart-spec-kit-mcp"]
       }
     }
   }
 }
 ```
 
-> 💡 **Tip:** Run `npm run setup` to see the exact configuration for your system.
+Rechargez VS Code (`Ctrl+Shift+P` → "Developer: Reload Window").
 
-3. **Reload VS Code:**
-
-Press `Ctrl+Shift+P` → "Developer: Reload Window"
-
-4. **Verify installation:**
-
-In Copilot Chat, ask: *"Use the ping tool from spec-kit"*
-
-## 🛠 Available MCP Tools
-
-### Core Tools
-
-| Tool | Description |
-|------|-------------|
-| `ping` | Health check - verify server is running |
-| `get_server_info` | Get server capabilities and info |
-
-### Workflow Tools
-
-| Tool | Description |
-|------|-------------|
-| `list_workflows` | List all available workflows |
-| `start_workflow` | Start a workflow with a context ID (e.g., ADO work item ID) |
-| `advance_workflow` | Move to the next step in a workflow |
-| `get_template` | Retrieve a raw Markdown template |
-
-### Agent Tools
-
-| Tool | Description |
-|------|-------------|
-| `list_agents` | List available AI agents and their capabilities |
-| `get_agent_prompt` | Get the full system prompt for an agent |
-| `invoke_agent` | Activate an agent with a specific task |
-
-## 🔄 Workflows
-
-Workflows are YAML files that define step-by-step processes for creating specifications.
-
-### Available Workflows
-
-- **feature-standard**: Create functional specifications from Feature work items
-
-### Workflow Structure
-
-```yaml
-name: feature-standard
-displayName: "Feature Specification"
-description: "Creates a functional specification from an ADO Feature"
-template: functional-spec.md
-defaultAgent: SpecAgent
-
-steps:
-  - id: fetch-workitem
-    name: "Fetch Azure DevOps Work Item"
-    action: fetch_ado
-    description: "Retrieve the Feature work item from Azure DevOps..."
-    
-  - id: generate-spec
-    name: "Generate Specification"
-    action: generate_content
-    agent: SpecAgent
-    description: "Generate the specification document..."
-```
-
-### Creating Custom Workflows
-
-1. Create a new `.yaml` file in `/workflows`
-2. Define steps with actions: `fetch_ado`, `generate_content`, `review`, `create_file`, `call_agent`
-3. Reference a template from `/templates`
-
-## 🤖 AI Agents
-
-Agents are specialized AI personas with focused capabilities:
-
-| Agent | Role | Use Case |
-|-------|------|----------|
-| **SpecAgent** | Specification Writer | Creating detailed specs from requirements |
-| **PlanAgent** | Technical Planner | Breaking features into implementation tasks |
-| **GovAgent** | Quality Reviewer | Reviewing docs for completeness & compliance |
-| **TestAgent** | Test Designer | Creating test strategies and test cases |
-
-## 📁 Project Structure
-
-```
-spec-kit-mcp/
-├── src/
-│   ├── index.ts              # MCP Server entrypoint
-│   ├── tools/
-│   │   ├── workflowTools.ts  # Workflow management tools
-│   │   └── agentTools.ts     # Agent invocation tools
-│   ├── prompts/
-│   │   └── agents.ts         # Agent system prompts
-│   ├── schemas/
-│   │   └── workflowSchema.ts # Zod validation schemas
-│   └── utils/
-│       ├── workflowLoader.ts # YAML workflow loader
-│       ├── markdownGenerator.ts # Template filling
-│       └── vsCodeConfigGenerator.ts
-├── workflows/                 # Workflow YAML definitions
-│   └── feature-standard.yaml
-├── templates/                 # Markdown templates
-│   └── functional-spec.md
-├── dist/                      # Compiled output
-├── package.json
-└── tsconfig.json
-```
-
-## 🚀 Usage Example
-
-### Creating a Feature Specification
-
-1. **Start the workflow** in Copilot Chat:
-   
-   *"Start the feature-standard workflow for work item 12345"*
-
-2. **Copilot will guide you** through each step:
-   - Fetch the work item from Azure DevOps
-   - Analyze requirements with SpecAgent
-   - Generate the specification document
-   - Review with GovAgent
-   - Save the final document
-
-3. **Review and refine** the generated specification
-
-### Using Agents Directly
-
-*"Invoke the PlanAgent to break down this feature into tasks: [paste requirements]"*
-
-## 🔧 Development
-
-### Scripts
+### Installation Globale
 
 ```bash
-npm run build    # Compile TypeScript
-npm run dev      # Watch mode development
-npm run start    # Run the server
-npm run setup    # Show VS Code config instructions
+npm install -g smart-spec-kit-mcp
 ```
-
-### Adding New Tools
-
-1. Create a new file in `src/tools/`
-2. Export a `registerXxxTools(server: McpServer)` function
-3. Import and call it in `src/index.ts`
-
-## 🤝 Integration with Azure DevOps MCP
-
-This server is designed to work alongside the official Azure DevOps MCP server:
 
 ```json
 {
   "mcp": {
     "servers": {
+      "spec-kit": {
+        "command": "spec-kit-mcp"
+      }
+    }
+  }
+}
+```
+
+### Vérification
+
+Dans Copilot Chat:
+
+```text
+Utilise le tool ping de spec-kit
+```
+
+---
+
+## 🚀 Usage
+
+### Démarrer un Workflow
+
+```text
+@spec-kit start_workflow workflow_name="feature-standard" context_id="12345"
+```
+
+Le serveur orchestre automatiquement:
+
+1. Récupération du work item Azure DevOps
+2. Génération de la spécification (SpecAgent)
+3. Planification technique (PlanAgent)
+4. Validation gouvernance (GovAgent)
+5. Création des artefacts
+
+> Validez chaque étape avec "OK" - c'est tout!
+
+### Workflows Disponibles
+
+| Workflow           | Description                              |
+| ------------------ | ---------------------------------------- |
+| `feature-standard` | Spécification fonctionnelle (5 étapes)   |
+| `feature-full`     | Spec + gouvernance complète (10 étapes)  |
+| `bugfix`           | Rapport de correction de bug (5 étapes)  |
+
+---
+
+## 🛠 MCP Tools
+
+### Orchestration
+
+| Tool              | Description                     |
+| ----------------- | ------------------------------- |
+| `start_workflow`  | Démarre un workflow automatisé  |
+| `execute_step`    | Continue à l'étape suivante     |
+| `workflow_status` | Statut de la session active     |
+| `list_workflows`  | Liste les workflows disponibles |
+| `abort_workflow`  | Annule le workflow en cours     |
+| `init`            | Initialise la config locale     |
+| `config`          | Affiche la configuration        |
+
+### Utilitaires
+
+| Tool   | Description             |
+| ------ | ----------------------- |
+| `ping` | Health check du serveur |
+| `help` | Aide et documentation   |
+
+---
+
+## 🤖 Agents IA
+
+| Agent         | Rôle          | Utilisation                      |
+| ------------- | ------------- | -------------------------------- |
+| **SpecAgent** | Rédacteur     | Spécifications fonctionnelles    |
+| **PlanAgent** | Planificateur | Découpage en tâches techniques   |
+| **GovAgent**  | Validateur    | Conformité RGPD, Sécurité, Archi |
+| **TestAgent** | Testeur       | Stratégies et cas de tests       |
+
+---
+
+## 🔗 Intégration Azure DevOps
+
+Pour activer l'intégration ADO, ajoutez le serveur MCP Azure DevOps:
+
+```json
+{
+  "mcp": {
+    "servers": {
+      "spec-kit": {
+        "command": "npx",
+        "args": ["-y", "smart-spec-kit-mcp"]
+      },
       "azure-devops": {
         "command": "npx",
-        "args": ["-y", "@modelcontextprotocol/server-azure-devops"],
+        "args": ["-y", "@anthropic-ai/azure-devops-mcp"],
         "env": {
           "AZURE_DEVOPS_ORG_URL": "https://dev.azure.com/your-org",
           "AZURE_DEVOPS_PAT": "your-personal-access-token"
         }
-      },
-      "spec-kit": {
-        "command": "node",
-        "args": ["path/to/spec-kit-mcp/dist/index.js"]
       }
     }
   }
 }
 ```
+
+---
+
+## 🔧 Personnalisation
+
+### Initialiser la config locale
+
+Dans Copilot Chat:
+
+```text
+@spec-kit init
+```
+
+Crée `.spec-kit/` avec des workflows et templates personnalisables pour votre projet.
+
+### Voir la configuration
+
+```text
+@spec-kit config
+```
+
+### Ordre de résolution
+
+1. **Local**: `.spec-kit/workflows/` et `.spec-kit/templates/`
+2. **Package**: Workflows par défaut (feature-standard, bugfix, etc.)
+
+> 📖 Voir [docs/PACKAGING.md](docs/PACKAGING.md) pour le guide complet.
+
+---
+
+## 📐 Créer un Workflow Custom
+
+Créez `.spec-kit/workflows/mon-workflow.yaml`:
+
+```yaml
+name: mon-workflow
+displayName: "Mon Workflow"
+description: "Description"
+template: mon-template.md
+defaultAgent: SpecAgent
+
+steps:
+  - id: fetch
+    name: "Récupération"
+    action: fetch_ado
+    description: "Récupère le work item"
+    
+  - id: generate
+    name: "Génération"
+    action: call_agent
+    agent: SpecAgent
+    description: "Génère le contenu"
+```
+
+**Actions disponibles**: `fetch_ado`, `generate_content`, `call_agent`, `review`, `create_file`
+
+---
+
+## 🧪 Développement
+
+```bash
+git clone https://github.com/anthropic-ai/smart-spec-kit.git
+cd smart-spec-kit
+npm install
+npm run build
+npm run dev      # Watch mode
+```
+
+---
 
 ## 📄 License
 
 MIT
 
-## 🙏 Acknowledgments
+---
 
-- Built with [@modelcontextprotocol/sdk](https://github.com/modelcontextprotocol/sdk)
-- Validation with [Zod](https://zod.dev)
-- YAML parsing with [js-yaml](https://github.com/nodeca/js-yaml)
+## 🙏 Technologies
+
+- [@modelcontextprotocol/sdk](https://github.com/modelcontextprotocol/sdk) - MCP Framework
+- [Zod](https://zod.dev) - Schema Validation
+- [js-yaml](https://github.com/nodeca/js-yaml) - YAML Parser

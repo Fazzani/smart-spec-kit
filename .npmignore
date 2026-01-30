@@ -1,0 +1,30 @@
+# Source files (not needed in package)
+src/
+scripts/
+docs/
+schemas/
+
+# Config files
+tsconfig.json
+.gitignore
+.github/
+
+# Project docs (keep README.md)
+PROJECT_CONTEXT.md
+TASK_QUEUE.md
+QUICK-START.md
+
+# Dev files
+*.log
+.env*
+coverage/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db

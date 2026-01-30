@@ -1,20 +1,25 @@
 #!/usr/bin/env node
 /**
- * Spec-Kit MCP Server
+ * Spec-Kit MCP Server v2.0
  * 
- * A custom MCP server for AI-driven specification engineering.
- * Orchestrates workflows, templates, and system prompts for GitHub Copilot.
+ * An automated workflow orchestration server for AI-driven specification engineering.
+ * Guides GitHub Copilot through multi-step workflows automatically.
+ * 
+ * Architecture:
+ * - Session Manager: Tracks workflow state across calls
+ * - Workflow Engine: Orchestrates step execution
+ * - Orchestration Tools: MCP interface for Copilot
  */
 
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
-import { registerWorkflowTools } from "./tools/workflowTools.js";
-import { registerAgentTools } from "./tools/agentTools.js";
+import { registerOrchestrationTools } from "./tools/orchestrationTools.js";
+import { sessionStore } from "./engine/sessionManager.js";
 
 // Server metadata
-const SERVER_NAME = "spec-kit-mcp";
-const SERVER_VERSION = "1.0.0";
+const SERVER_NAME = "spec-kit";
+const SERVER_VERSION = "2.0.0";
 
 /**
  * Initialize and configure the MCP Server
@@ -26,69 +31,90 @@ function createServer(): McpServer {
   });
 
   // Register tools
-  registerTools(server);
-  registerWorkflowTools(server);
-  registerAgentTools(server);
+  registerCoreTools(server);
+  registerOrchestrationTools(server);
 
   return server;
 }
 
 /**
- * Register all MCP tools
+ * Register core utility tools
  */
-function registerTools(server: McpServer): void {
-  // Tool: ping - Health check / connectivity test
+function registerCoreTools(server: McpServer): void {
+  // Tool: ping - Health check
   server.tool(
     "ping",
-    "Test tool to verify the Spec-Kit MCP server is running and responsive. Returns server info and timestamp.",
+    "Vérifie que le serveur Spec-Kit est opérationnel.",
     {
-      message: z.string().optional().describe("Optional message to echo back"),
+      message: z.string().optional().describe("Message optionnel à renvoyer"),
     },
     async ({ message }) => {
-      const response = {
-        status: "ok",
-        server: SERVER_NAME,
-        version: SERVER_VERSION,
-        timestamp: new Date().toISOString(),
-        echo: message ?? null,
-      };
-
+      const activeSession = sessionStore.getActiveSession();
+      
       return {
-        content: [
-          {
-            type: "text" as const,
-            text: JSON.stringify(response, null, 2),
-          },
-        ],
+        content: [{
+          type: "text" as const,
+          text: JSON.stringify({
+            status: "ok",
+            server: SERVER_NAME,
+            version: SERVER_VERSION,
+            timestamp: new Date().toISOString(),
+            activeSession: activeSession?.sessionId ?? null,
+            echo: message ?? null,
+          }, null, 2),
+        }],
       };
     }
   );
 
-  // Tool: get_server_info - Returns detailed server capabilities
+  // Tool: help - Show available commands
   server.tool(
-    "get_server_info",
-    "Returns detailed information about the Spec-Kit MCP server capabilities and available workflows.",
+    "help",
+    "Affiche l'aide et les commandes disponibles.",
     {},
     async () => {
-      const info = {
-        name: SERVER_NAME,
-        version: SERVER_VERSION,
-        description: "AI-driven specification platform for VS Code & GitHub Copilot",
-        capabilities: {
-          workflows: ["feature-standard", "bugfix", "technical-spec"],
-          templates: ["functional-spec", "technical-spec", "test-plan"],
-          agents: ["SpecAgent", "PlanAgent", "GovAgent"],
-        },
-        status: "ready",
-      };
-
       return {
-        content: [
-          {
-            type: "text" as const,
-            text: JSON.stringify(info, null, 2),
-          },
-        ],
+        content: [{
+          type: "text" as const,
+          text: `
+# 🚀 Spec-Kit MCP Server v${SERVER_VERSION}
+
+## Commandes Principales
+
+### Démarrer un workflow
+\`\`\`
+start_workflow workflow_name="feature-standard" context_id="12345"
+\`\`\`
+
+### Continuer l'exécution
+\`\`\`
+execute_step previous_output="[résultat de l'étape précédente]"
+\`\`\`
+
+### Voir le statut
+\`\`\`
+workflow_status
+\`\`\`
+
+### Lister les workflows
+\`\`\`
+list_workflows
+\`\`\`
+
+## Workflows Disponibles
+
+- **feature-standard** - Spécification fonctionnelle (5 étapes)
+- **feature-full** - Spec complète avec gouvernance (10 étapes)  
+- **bugfix** - Correction de bug (5 étapes)
+
+## Mode d'emploi
+
+1. Démarrez un workflow avec l'ID du work item Azure DevOps
+2. Le serveur guide automatiquement chaque étape
+3. Validez chaque action proposée
+4. Les artefacts sont générés automatiquement
+          `.trim(),
+        }],
       };
     }
   );
@@ -98,6 +124,9 @@ function registerTools(server: McpServer): void {
  * Main entry point
  */
 async function main(): Promise<void> {
+  // Initialize session store
+  await sessionStore.init();
+  
   const server = createServer();
   const transport = new StdioServerTransport();
 
@@ -105,11 +134,11 @@ async function main(): Promise<void> {
   await server.connect(transport);
 
   // Log to stderr (stdout is reserved for MCP protocol)
-  console.error(`[${SERVER_NAME}] Server started successfully (v${SERVER_VERSION})`);
+  console.error(`[${SERVER_NAME}] Server v${SERVER_VERSION} started - Automated orchestration ready`);
 }
 
 // Run the server
-main().catch((error) => {
-  console.error("[spec-kit-mcp] Fatal error:", error);
+main().catch((error: unknown) => {
+  console.error("[spec-kit] Fatal error:", error);
   process.exit(1);
 });

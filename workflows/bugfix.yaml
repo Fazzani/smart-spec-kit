@@ -1,0 +1,99 @@
+# Bugfix Workflow
+# Streamlined process for bug fixes with validation checkpoints
+
+name: bugfix
+displayName: "Bug Fix"
+description: "Structured workflow for analyzing, fixing, and validating bug corrections"
+
+metadata:
+  version: "1.0"
+  author: "Spec-Kit"
+  tags:
+    - bugfix
+    - hotfix
+    - correction
+
+template: bugfix-report.md
+defaultAgent: SpecAgent
+
+steps:
+  - id: analyze-bug
+    name: "Analyze Bug & Root Cause"
+    action: fetch_ado
+    description: |
+      Retrieve the bug work item from Azure DevOps and analyze:
+      - Reproduction steps
+      - Error logs and stack traces
+      - Affected components
+      - User impact assessment
+      
+      Identify the root cause of the issue.
+    outputs:
+      - bug_data
+      - root_cause_analysis
+
+  - id: plan-fix
+    name: "Plan Correction"
+    action: call_agent
+    agent: PlanAgent
+    description: |
+      Create a correction plan including:
+      - Proposed fix approach
+      - Files/components to modify
+      - Potential side effects
+      - Rollback strategy if needed
+      
+      Keep the fix minimal and focused.
+    inputs:
+      source: "root_cause_analysis"
+    outputs:
+      - fix_plan
+
+  - id: security-check
+    name: "Security Validation"
+    action: review
+    agent: GovAgent
+    description: |
+      Quick security review of the proposed fix:
+      - [ ] No new vulnerabilities introduced
+      - [ ] Input validation maintained
+      - [ ] No sensitive data exposure
+      - [ ] Authentication/Authorization intact
+    inputs:
+      document: "fix_plan"
+    outputs:
+      - security_clearance
+
+  - id: implement-fix
+    name: "Implement & Test"
+    action: generate_content
+    description: |
+      Implement the fix following the plan:
+      1. Write the code fix
+      2. Add unit tests for the bug scenario
+      3. Add regression tests
+      4. Update documentation if needed
+      
+      Ensure test coverage for the fixed code path.
+    inputs:
+      plan: "fix_plan"
+    outputs:
+      - code_changes
+      - test_cases
+
+  - id: final-review
+    name: "Final Review"
+    action: review
+    agent: GovAgent
+    description: |
+      Final validation before merge:
+      - [ ] Fix addresses root cause
+      - [ ] No regression introduced
+      - [ ] Tests pass
+      - [ ] Code review approved
+      - [ ] Documentation updated
+    inputs:
+      changes: "code_changes"
+      tests: "test_cases"
+    outputs:
+      - approval_status

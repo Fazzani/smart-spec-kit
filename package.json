@@ -1,22 +1,55 @@
 {
-  "name": "spec-kit-mcp",
-  "version": "1.0.0",
+  "name": "smart-spec-kit-mcp",
+  "version": "2.0.0",
   "description": "AI-driven specification platform using MCP (Model Context Protocol) for VS Code & GitHub Copilot",
   "main": "dist/index.js",
   "type": "module",
   "bin": {
     "spec-kit-mcp": "./dist/index.js"
   },
+  "files": [
+    "dist",
+    "workflows",
+    "templates",
+    "README.md"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && npm run copy-assets",
+    "copy-assets": "node scripts/copy-assets.js",
     "dev": "tsx watch src/index.ts",
     "start": "node dist/index.js",
     "setup": "tsx src/utils/vsCodeConfigGenerator.ts",
-    "test": "tsx src/index.ts"
+    "test": "tsx src/index.ts",
+    "prepublishOnly": "npm run build"
   },
-  "keywords": ["mcp", "model-context-protocol", "copilot", "azure-devops", "specifications"],
-  "author": "",
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "copilot",
+    "github-copilot",
+    "azure-devops",
+    "specifications",
+    "documentation",
+    "ai",
+    "workflow",
+    "automation"
+  ],
+  "author": "Anthropic",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anthropic-ai/smart-spec-kit.git"
+  },
+  "homepage": "https://github.com/anthropic-ai/smart-spec-kit#readme",
+  "bugs": {
+    "url": "https://github.com/anthropic-ai/smart-spec-kit/issues"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.25.3",
     "js-yaml": "^4.1.1",
