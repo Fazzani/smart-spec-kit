@@ -21,26 +21,47 @@ function formatStepInstructions(
   workflow: Workflow,
   stepIndex: number,
   contextId: string,
-  template?: string
+  template?: string,
+  autoMode = false
 ): string {
   const step = workflow.steps[stepIndex];
   if (!step) {
-    return `✅ Workflow "${workflow.displayName}" completed for context: ${contextId}`;
+    return `
+# ✅ Workflow Completed
+
+**Workflow:** ${workflow.displayName}
+**Context:** ${contextId}
+
+All steps have been completed successfully.
+
+## Next Actions
+- Review the generated outputs
+- Call \`speckit: memory auto\` to save learnings
+- Commit your changes
+`;
   }
 
   const totalSteps = workflow.steps.length;
-  const progress = `[Step ${stepIndex + 1}/${totalSteps}]`;
+  const progressBar = workflow.steps.map((s, i) => 
+    i < stepIndex ? "✅" : i === stepIndex ? "🔄" : "⬜"
+  ).join(" ");
   
   let instructions = `
-## 🔄 Workflow: ${workflow.displayName}
-### ${progress} ${step.name}
+# 🔄 Workflow: ${workflow.displayName}
 
-**Context ID:** \`${contextId}\`
-**Agent:** ${step.agent ?? workflow.defaultAgent}
+## Progress
+${progressBar}
+**Step ${stepIndex + 1} of ${totalSteps}:** ${step.name}
+${autoMode ? "**Mode:** 🤖 AUTO (proceeding without approval)" : ""}
 
 ---
 
-### 📋 Instructions
+## 📋 Current Step: ${step.name}
+
+**Context:** \`${contextId}\`
+**Agent:** ${step.agent ?? workflow.defaultAgent}
+
+### Instructions
 
 ${step.description}
 
@@ -50,68 +71,36 @@ ${step.description}
   switch (step.action) {
     case "fetch_ado":
       instructions += `
-### 🔧 Action Required: Fetch from Azure DevOps
+### 🔧 Action: Fetch from Azure DevOps
 
-Use the **Azure DevOps MCP server** to retrieve the work item:
-
-\`\`\`
-Call: azure-devops → get_work_item
-Parameters: { "id": "${contextId}" }
-\`\`\`
-
-After fetching, proceed with the next step.
+Use the Azure DevOps MCP server to retrieve work item \`${contextId}\`.
 `;
       break;
 
     case "generate_content":
       instructions += `
-### 🔧 Action Required: Generate Content
+### 🔧 Action: Generate Content
 
-Use the fetched data to generate the specification content.
-${template ? "\n**Template structure to follow:**\n\n```markdown\n" + template.slice(0, 500) + "\n...\n```\n" : ""}
-
-Fill in the sections based on the Azure DevOps work item data.
-Mark sections requiring human input with \`[TO FILL]\`.
+Generate the required content based on previous step outputs.
+${template ? "\n**Template:**\n```markdown\n" + template.slice(0, 300) + "\n...\n```\n" : ""}
 `;
       break;
 
     case "review":
       instructions += `
-### 🔧 Action Required: Review
+### 🔧 Action: Review
 
-Review the generated content for:
-- Completeness
-- Technical accuracy  
-- Alignment with requirements
-
-Suggest improvements if needed.
-`;
-      break;
-
-    case "create_file":
-      instructions += `
-### 🔧 Action Required: Create File
-
-Create the specification file with the generated content.
-Suggested filename: \`specs/${contextId}-spec.md\`
+Review the generated content for completeness and accuracy.
 `;
       break;
 
     case "call_agent":
       instructions += `
-### 🔧 Action Required: Call Agent
+### 🔧 Action: Execute
 
-Invoke the **${step.agent ?? workflow.defaultAgent}** agent for specialized processing.
+Perform the described action using your capabilities.
 `;
       break;
-  }
-
-  // Add inputs if defined
-  if (step.inputs && Object.keys(step.inputs).length > 0) {
-    instructions += `
-### 📥 Inputs
-${Object.entries(step.inputs).map(([k, v]) => `- **${k}:** ${v}`).join("\n")}
-`;
   }
 
   // Add expected outputs if defined
@@ -122,18 +111,42 @@ ${step.outputs.map((o: string) => `- ${o}`).join("\n")}
 `;
   }
 
-  // Navigation hint
+  // Navigation
   const nextStep = getNextStep(workflow, step.id);
   if (nextStep) {
-    instructions += `
+    if (autoMode) {
+      instructions += `
 ---
-⏭️ **Next Step:** ${nextStep.name}
-When ready, call \`advance_workflow\` with step_id: \`${nextStep.id}\`
+
+## ⏭️ AUTO MODE
+
+When this step is complete, **immediately proceed** to the next step:
+**Next:** ${nextStep.name}
+
+Do not wait for user approval. Execute all steps sequentially.
 `;
+    } else {
+      instructions += `
+---
+
+## ⏭️ Next Step
+
+When complete, proceed to: **${nextStep.name}**
+Call \`execute_step\` with step_id: \`${nextStep.id}\`
+
+Or ask the user: "Step complete. Proceed to ${nextStep.name}?"
+`;
+    }
   } else {
     instructions += `
 ---
-✅ **This is the final step.** Complete the action to finish the workflow.
+
+## ✅ Final Step
+
+This is the last step. After completion:
+1. Summarize what was done
+2. Save learnings to memory (\`speckit: memory auto\`)
+3. Suggest next actions
 `;
   }
 
@@ -192,15 +205,17 @@ export function registerWorkflowTools(server: McpServer): void {
   // Tool: start_workflow - Start a workflow execution
   server.tool(
     "start_workflow",
-    "Start a new workflow execution. Returns structured instructions for the first step.",
+    "Start a new workflow execution. Returns structured instructions for the first step. Use auto=true for AUTO mode (no user approval between steps).",
     {
-      workflow_name: z.string().describe("Name of the workflow to start (e.g., 'feature-standard')"),
-      context_id: z.string().describe("Context identifier, typically the Azure DevOps Work Item ID"),
+      workflow_name: z.string().describe("Name of the workflow to start (e.g., 'feature-standard', 'bugfix-quick')"),
+      context_id: z.string().optional().describe("Context identifier (e.g., Work Item ID, feature name). Optional."),
+      auto: z.boolean().optional().describe("AUTO mode: proceed through all steps without user approval. Default: false"),
     },
-    async ({ workflow_name, context_id }) => {
+    async ({ workflow_name, context_id, auto }) => {
       try {
         const { workflow, template } = await loadWorkflowWithTemplate(workflow_name);
-        const instructions = formatStepInstructions(workflow, 0, context_id, template);
+        const effectiveContextId = context_id || "current-context";
+        const instructions = formatStepInstructions(workflow, 0, effectiveContextId, template, auto ?? false);
 
         return {
           content: [{
@@ -226,10 +241,11 @@ export function registerWorkflowTools(server: McpServer): void {
     "Advance to a specific step in the workflow. Use after completing the current step.",
     {
       workflow_name: z.string().describe("Name of the active workflow"),
-      context_id: z.string().describe("Context identifier (Work Item ID)"),
+      context_id: z.string().optional().describe("Context identifier"),
       step_id: z.string().describe("ID of the step to advance to"),
+      auto: z.boolean().optional().describe("AUTO mode: proceed through remaining steps without user approval"),
     },
-    async ({ workflow_name, context_id, step_id }) => {
+    async ({ workflow_name, context_id, step_id, auto }) => {
       try {
         const { workflow, template } = await loadWorkflowWithTemplate(workflow_name);
         const stepIndex = workflow.steps.findIndex((s) => s.id === step_id);
@@ -239,7 +255,8 @@ export function registerWorkflowTools(server: McpServer): void {
           throw new Error(`Step "${step_id}" not found. Valid step IDs: ${validIds}`);
         }
 
-        const instructions = formatStepInstructions(workflow, stepIndex, context_id, template);
+        const effectiveContextId = context_id || "current-context";
+        const instructions = formatStepInstructions(workflow, stepIndex, effectiveContextId, template, auto ?? false);
 
         return {
           content: [{

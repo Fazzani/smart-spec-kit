@@ -1,12 +1,13 @@
 {
   "name": "smart-spec-kit-mcp",
-  "version": "2.1.5",
+  "version": "2.1.8",
   "description": "AI-driven specification platform using MCP (Model Context Protocol) for VS Code & GitHub Copilot",
   "main": "dist/index.js",
   "type": "module",
   "bin": {
-    "spec-kit-mcp": "./dist/cli.js",
-    "smart-spec-kit-mcp": "./dist/cli.js"
+    "spec-kit-mcp": "./dist/index.js",
+    "smart-spec-kit-mcp": "./dist/index.js",
+    "spec-kit-setup": "./dist/cli.js"
   },
   "files": [
     "dist",

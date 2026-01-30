@@ -382,9 +382,9 @@ Exécutez sans --dry-run pour appliquer les changements.
   
   console.log(`
 ${colors.green}╔═══════════════════════════════════════════════════════════╗
-║                                                            ║
+║                                                           ║
 ║   ${colors.bold}✅ Installation terminée!${colors.reset}${colors.green}                               ║
-║                                                            ║
+║                                                           ║
 ╚═══════════════════════════════════════════════════════════╝${colors.reset}
 
 ${colors.bold}Prochaines étapes:${colors.reset}
@@ -410,6 +410,7 @@ ${colors.bold}Commandes simples (recommandé):${colors.reset}
 ${colors.bold}Workflows automatisés (optionnel):${colors.reset}
    speckit: start_workflow workflow_name="feature-quick"     ${colors.cyan}← Quick Win (léger)${colors.reset}
    speckit: start_workflow workflow_name="feature-standard"
+   speckit: start_workflow workflow_name="bugfix-quick"      ${colors.cyan}← Bugfix rapide${colors.reset}
    speckit: start_workflow workflow_name="bugfix"
    speckit: start_workflow workflow_name="feature-full" auto=true  ${colors.cyan}← Mode AUTO${colors.reset}
 
