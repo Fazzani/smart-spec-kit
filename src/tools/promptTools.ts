@@ -12,7 +12,7 @@ import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 
 // Schema for prompt tool arguments
 const SpecifyArgsSchema = z.object({
-  requirements: z.string().describe("The requirements to specify. Can be an Azure DevOps work item ID (e.g., #12345) or a feature description."),
+  requirements: z.string().optional().describe("The requirements to specify. Can be a feature description, user story, or Azure DevOps work item ID (e.g., #12345). If not provided, Copilot will ask the user."),
   contextId: z.string().optional().describe("Optional context ID for the specification (used for filename)."),
 });
 
@@ -61,24 +61,33 @@ function getBuiltInDocumentation(): string {
 
 ## Available Commands
 
-| Command | Description |
-|---------|-------------|
-| \`speckit: spec\` | Create a functional specification |
-| \`speckit: plan\` | Create an implementation plan |
-| \`speckit: tasks\` | Generate task breakdown |
-| \`speckit: implement\` | Implement tasks |
-| \`speckit: clarify\` | Clarify requirements |
-| \`speckit: help\` | Get help on Spec-Kit |
+All commands are conversational - parameters are optional. Just type the command and Copilot will guide you.
+
+| Command | Description | Example |
+|---------|-------------|---------|
+| \`speckit: spec\` | Create a specification | \`speckit: spec pour un système de login\` |
+| \`speckit: plan\` | Create implementation plan | \`speckit: plan\` |
+| \`speckit: tasks\` | Generate task breakdown | \`speckit: tasks\` |
+| \`speckit: implement\` | Implement tasks | \`speckit: implement\` or \`speckit: implement task 3\` |
+| \`speckit: clarify\` | Clarify requirements | \`speckit: clarify\` |
+| \`speckit: help\` | Get help | \`speckit: help workflows\` |
+
+## Quick Start
+
+1. **Create a spec**: \`speckit: spec\` then describe what you want
+2. **Plan it**: \`speckit: plan\`
+3. **Break into tasks**: \`speckit: tasks\`
+4. **Implement**: \`speckit: implement\`
 
 ## Project Structure
 
 \`\`\`
 .spec-kit/
-├── prompts/      # Prompt-as-Code files
-├── templates/    # Document templates
-├── memory/       # Project constitution
-└── workflows/    # YAML workflows
-specs/            # Generated specifications
+├── prompts/      # Prompt-as-Code files (customize behavior)
+├── templates/    # Document templates (customize format)
+├── memory/       # Project constitution (your principles)
+└── workflows/    # YAML workflows (multi-step processes)
+specs/            # Generated specifications (output)
 \`\`\`
 
 ## Customization
@@ -90,10 +99,10 @@ Edit files in \`.spec-kit/prompts/\` to change command behavior.
 Modify \`.spec-kit/templates/\` for custom document formats.
 
 ### Create Workflows
-Add YAML files to \`.spec-kit/workflows/\` for custom processes.
+Add YAML files to \`.spec-kit/workflows/\` for custom multi-step processes.
 
 ### Update Constitution
-Edit \`.spec-kit/memory/constitution.md\` with your project principles.
+Edit \`.spec-kit/memory/constitution.md\` with your project principles (tech stack, conventions, etc.)
 
 ## Troubleshooting
 
@@ -245,7 +254,7 @@ export function registerPromptTools(server: McpServer): void {
   // speckit_specify - Create a functional specification
   server.tool(
     "speckit_specify",
-    "Create a functional specification from requirements or an Azure DevOps work item. Use this when the user wants to create a spec, document requirements, or says 'speckit: spec', 'speckit: specify', or 'créer une spec'.",
+    "Create a functional specification from requirements. Use this when the user wants to create a spec, document requirements, or says 'speckit: spec', 'speckit: specify', or 'créer une spec'. Requirements can be a description, user story, or optionally an Azure DevOps work item ID.",
     SpecifyArgsSchema.shape,
     async ({ requirements, contextId }) => {
       const projectPath = process.cwd();
@@ -264,8 +273,11 @@ export function registerPromptTools(server: McpServer): void {
       // Load template
       const template = await loadTemplate(projectPath, "functional-spec");
       
+      // Handle missing requirements - prompt user
+      const userInput = requirements || "[User will provide requirements]";
+      
       // Build context
-      const context = await buildPromptContext(projectPath, "specify", requirements, {
+      const context = await buildPromptContext(projectPath, "specify", userInput, {
         "Template": template || "No template found",
         "Context ID": contextId || "auto-generated",
       });
@@ -275,7 +287,7 @@ export function registerPromptTools(server: McpServer): void {
           type: "text" as const,
           text: `## 📋 Specification Creation
 
-**Requirements:** ${requirements}
+${requirements ? `**Requirements:** ${requirements}` : "**📝 Please describe what you want to build.**\n\nYou can provide:\n- A feature description (e.g., \"user authentication with email/password\")\n- A user story (e.g., \"As a user, I want to...\")\n- An Azure DevOps work item ID (e.g., \"#12345\") - optional"}
 ${contextId ? `**Context ID:** ${contextId}` : ""}
 
 ${context}
@@ -284,11 +296,16 @@ ${context}
 
 ## Copilot Instructions
 
-Based on the prompt instructions and project constitution above:
+${requirements ? `Based on the prompt instructions and project constitution above:
 1. Analyze the provided requirements
 2. Fill in the functional specification template
 3. Save the specification to \`specs/${contextId || "feature"}-spec.md\`
-4. Report what was created and suggest next steps (speckit_plan)`,
+4. Report what was created and suggest next steps (speckit_plan)` : `The user hasn't provided requirements yet. Ask them to describe:
+- What feature or functionality they want to build
+- The user need or problem it solves
+- Any constraints or requirements they have
+
+Once they provide this information, proceed with specification creation.`}`,
         }],
       };
     }

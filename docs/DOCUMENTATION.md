@@ -41,21 +41,33 @@ Spec-Kit is an MCP (Model Context Protocol) server that provides **Prompt-as-Cod
 
 ## MCP Tools
 
+> **Note**: All parameters are optional. Spec-Kit is designed to be conversational - if you don't provide information upfront, Copilot will ask for it.
+
 ### speckit_specify
 
 **Purpose**: Create a functional specification from requirements.
 
 **Triggers**: `speckit: spec`, `speckit: specify`, `créer une spec`
 
-**Parameters**:
-- `requirements` (required): The requirements to specify
-- `contextId` (optional): ID for the specification filename
+**Parameters** (all optional):
+- `requirements`: What you want to build. Can be:
+  - A feature description: "user authentication with email/password"
+  - A user story: "As a user, I want to..."
+  - An Azure DevOps work item ID: "#12345"
+- `contextId`: ID for the specification filename
+
+**Examples**:
+```
+speckit: spec
+speckit: spec pour un système de notifications push
+speckit: spec user authentication with OAuth
+```
 
 **Behavior**:
 1. Loads prompt from `.spec-kit/prompts/specify.md`
 2. Loads constitution from `.spec-kit/memory/constitution.md`
 3. Loads template from `.spec-kit/templates/functional-spec.md`
-4. Returns context for Copilot to generate the specification
+4. If no requirements provided, asks the user
 5. Output saved to `specs/{contextId}-spec.md`
 
 ### speckit_plan
@@ -64,8 +76,14 @@ Spec-Kit is an MCP (Model Context Protocol) server that provides **Prompt-as-Cod
 
 **Triggers**: `speckit: plan`, `planifier`, `créer un plan`
 
-**Parameters**:
-- `specPath` (optional): Path to specification file
+**Parameters** (all optional):
+- `specPath`: Path to specification file (auto-detects most recent if not provided)
+
+**Examples**:
+```
+speckit: plan
+speckit: plan pour la spec specs/auth-spec.md
+```
 
 **Behavior**:
 1. Finds the most recent specification in `specs/`
@@ -79,8 +97,14 @@ Spec-Kit is an MCP (Model Context Protocol) server that provides **Prompt-as-Cod
 
 **Triggers**: `speckit: tasks`, `générer les tâches`, `créer les tâches`
 
-**Parameters**:
-- `planPath` (optional): Path to plan file
+**Parameters** (all optional):
+- `planPath`: Path to plan file (auto-detects most recent if not provided)
+
+**Examples**:
+```
+speckit: tasks
+speckit: générer les tâches
+```
 
 **Behavior**:
 1. Finds the most recent plan in `specs/`
@@ -94,8 +118,15 @@ Spec-Kit is an MCP (Model Context Protocol) server that provides **Prompt-as-Cod
 
 **Triggers**: `speckit: implement`, `implémenter`, `coder`
 
-**Parameters**:
-- `taskId` (optional): Specific task ID to implement
+**Parameters** (all optional):
+- `taskId`: Specific task ID to implement (picks next pending if not provided)
+
+**Examples**:
+```
+speckit: implement
+speckit: implement task 3
+speckit: implémenter la tâche 5
+```
 
 **Behavior**:
 1. Loads tasks from `specs/tasks.md`
@@ -110,9 +141,15 @@ Spec-Kit is an MCP (Model Context Protocol) server that provides **Prompt-as-Cod
 
 **Triggers**: `speckit: clarify`, `clarifier`, `préciser`
 
-**Parameters**:
-- `specPath` (optional): Path to specification
-- `questions` (optional): Specific questions
+**Parameters** (all optional):
+- `specPath`: Path to specification (auto-detects if not provided)
+- `questions`: Specific questions to clarify
+
+**Examples**:
+```
+speckit: clarify
+speckit: clarifier les critères d'acceptation
+```
 
 **Behavior**:
 1. Finds `[NEEDS CLARIFICATION]` markers
@@ -125,8 +162,15 @@ Spec-Kit is an MCP (Model Context Protocol) server that provides **Prompt-as-Cod
 
 **Triggers**: `speckit: help`, `aide sur speckit`
 
-**Parameters**:
-- `topic` (optional): Specific topic to get help on
+**Parameters** (all optional):
+- `topic`: Specific topic to get help on
+
+**Examples**:
+```
+speckit: help
+speckit: help workflows
+speckit: help comment créer un template ?
+```
 
 **Topics covered**:
 - Commands and usage
