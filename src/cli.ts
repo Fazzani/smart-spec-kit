@@ -291,6 +291,19 @@ async function copyCopilotInstructions(projectPath: string): Promise<boolean> {
   return true;
 }
 
+async function copyGitHubPrompts(projectPath: string): Promise<number> {
+  // Copy slash commands (.prompt.md files) to .github/prompts/
+  const srcPrompts = path.join(PACKAGE_ROOT, "starter-kit", "github-prompts");
+  const destPrompts = path.join(projectPath, ".github", "prompts");
+  
+  if (!(await fileExists(srcPrompts))) {
+    log(`⚠️  Dossier github-prompts non trouvé: ${srcPrompts}`, colors.yellow);
+    return 0;
+  }
+  
+  return await copyDir(srcPrompts, destPrompts);
+}
+
 async function addToGitignore(projectPath: string): Promise<void> {
   const gitignorePath = path.join(projectPath, ".gitignore");
   const specKitIgnore = "\n# Spec-Kit sessions (auto-generated)\n.spec-kit-sessions/\n";
@@ -363,9 +376,10 @@ ${colors.cyan}╔═════════════════════
   
   // Step 1: Copy prompts to project
   if (!skipPrompts) {
-    logStep(1, "Installation des prompts MCP...");
+    logStep(1, "Installation des prompts et slash commands...");
     if (dryRun) {
       log("   📋 Copierait les prompts dans .spec-kit/prompts/", colors.yellow);
+      log("   📋 Copierait les slash commands dans .github/prompts/", colors.yellow);
       log("   📋 Copierait copilot-instructions.md dans .github/", colors.yellow);
     } else {
       const promptsCount = await copyPromptsToProject(projectPath);
@@ -373,6 +387,14 @@ ${colors.cyan}╔═════════════════════
         log(`   ✅ ${promptsCount} prompts copiés dans .spec-kit/prompts/`, colors.green);
       } else {
         log("   ⏭️  Aucun prompt à copier", colors.yellow);
+      }
+      
+      // Copy slash commands (.prompt.md files) to .github/prompts/
+      const slashCommandsCount = await copyGitHubPrompts(projectPath);
+      if (slashCommandsCount > 0) {
+        log(`   ✅ ${slashCommandsCount} slash commands copiés dans .github/prompts/`, colors.green);
+      } else {
+        log("   ⚠️  Pas de slash commands à copier", colors.yellow);
       }
       
       // Copy copilot-instructions.md
@@ -535,17 +557,23 @@ ${colors.bold}Prochaines étapes:${colors.reset}
 2. ${colors.cyan}Éditez votre constitution:${colors.reset}
    .spec-kit/memory/constitution.md
 
-3. ${colors.cyan}Utilisez les commandes speckit dans Copilot Chat:${colors.reset}
+3. ${colors.cyan}Utilisez les slash commands dans Copilot Chat:${colors.reset}
 
-${colors.bold}Commandes simples (recommandé):${colors.reset}
+${colors.bold}Slash Commands (tapez / pour voir la liste):${colors.reset}
+   /speckit.specify    Créer une spécification
+   /speckit.plan       Créer le plan technique
+   /speckit.tasks      Générer les tâches
+   /speckit.implement  Implémenter les tâches
+   /speckit.clarify    Clarifier les requirements
+   /speckit.validate   Valider la conformité (sécurité, RGPD...)
+   /speckit.memory     Gérer la mémoire projet
+   /speckit.help       Obtenir de l'aide sur Spec-Kit
+
+${colors.bold}Commandes par mots-clés (alternative):${colors.reset}
    speckit: spec       Créer une spécification (description libre)
    speckit: plan       Créer le plan technique
    speckit: tasks      Générer les tâches
    speckit: implement  Implémenter les tâches
-   speckit: clarify    Clarifier les requirements
-   speckit: validate   Valider la conformité (sécurité, RGPD...)
-   speckit: memory     Gérer la mémoire projet (décisions, conventions...)
-   speckit: help       Obtenir de l'aide sur Spec-Kit
 
 ${colors.bold}Workflows automatisés (optionnel):${colors.reset}
    speckit: start_workflow workflow_name="feature-quick"     ${colors.cyan}← Quick Win (léger)${colors.reset}
@@ -563,12 +591,13 @@ ${colors.bold}Auto-Memory:${colors.reset}
    automatiquement sauvegardés dans .spec-kit/memory/
 
 ${colors.bold}Exemples:${colors.reset}
-   speckit: spec pour un système d'authentification
-   speckit: plan
+   /speckit.specify pour un système d'authentification
+   /speckit.plan
    speckit: start_workflow workflow_name="feature-standard" PiP Support auto=true
-   speckit: help comment créer un workflow ?
+   /speckit.help comment créer un workflow ?
 
 ${colors.bold}Structure créée:${colors.reset}
+   .github/prompts/                 Slash commands (/speckit.*)
    .github/copilot-instructions.md  Instructions pour Copilot
    .spec-kit/prompts/               Prompts (personnalisables)
    .spec-kit/templates/             Templates de documents

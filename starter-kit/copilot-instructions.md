@@ -1,8 +1,23 @@
 # Copilot Instructions for Spec-Kit
 
-This project uses **Spec-Kit** for specification-driven development. Spec-Kit provides MCP tools to guide you through a structured workflow from requirements to implementation.
+This project uses **Spec-Kit** for specification-driven development. Spec-Kit provides MCP tools and slash commands to guide you through a structured workflow from requirements to implementation.
 
-## How to Use Spec-Kit
+## Slash Commands (Recommended)
+
+Users can type `/speckit.` to see available slash commands:
+
+| Slash Command | MCP Tool | Description |
+|---------------|----------|-------------|
+| `/speckit.specify` | `speckit_specify` | Create a functional specification |
+| `/speckit.plan` | `speckit_plan` | Create an implementation plan |
+| `/speckit.tasks` | `speckit_tasks` | Generate task breakdown |
+| `/speckit.implement` | `speckit_implement` | Implement tasks |
+| `/speckit.clarify` | `speckit_clarify` | Clarify requirements |
+| `/speckit.validate` | `speckit_validate` | Validate compliance (security, RGPD, etc.) |
+| `/speckit.memory` | `speckit_memory` | Manage project memory |
+| `/speckit.help` | `speckit_help` | Get help and documentation |
+
+## Keyword Commands (Alternative)
 
 When the user mentions **"speckit:"** followed by a command, or uses these keywords in French/English, call the corresponding MCP tool:
 
@@ -45,6 +60,17 @@ speckit_specify → speckit_plan → speckit_tasks → speckit_implement
 ## Project Structure
 
 ```
+.github/
+└── prompts/           # Slash commands for Copilot
+    ├── speckit.specify.prompt.md
+    ├── speckit.plan.prompt.md
+    ├── speckit.tasks.prompt.md
+    ├── speckit.implement.prompt.md
+    ├── speckit.clarify.prompt.md
+    ├── speckit.validate.prompt.md
+    ├── speckit.memory.prompt.md
+    └── speckit.help.prompt.md
+
 .spec-kit/
 ├── prompts/           # Customizable prompts (define command behavior)
 │   ├── specify.md

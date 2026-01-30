@@ -81,6 +81,15 @@ Après installation, votre projet contient:
 ```text
 votre-projet/
 ├── .github/
+│   ├── prompts/                  # Slash commands pour Copilot
+│   │   ├── speckit.specify.prompt.md
+│   │   ├── speckit.plan.prompt.md
+│   │   ├── speckit.tasks.prompt.md
+│   │   ├── speckit.implement.prompt.md
+│   │   ├── speckit.clarify.prompt.md
+│   │   ├── speckit.validate.prompt.md
+│   │   ├── speckit.memory.prompt.md
+│   │   └── speckit.help.prompt.md
 │   └── copilot-instructions.md   # Guide Copilot sur l'utilisation de Spec-Kit
 ├── .spec-kit/
 │   ├── prompts/                  # Prompts (lus par les outils MCP)
@@ -112,7 +121,24 @@ votre-projet/
 
 ## 🎮 Commandes Disponibles
 
-Utilisez ces phrases dans Copilot Chat pour déclencher les outils MCP:
+### Slash Commands (Recommandé)
+
+Tapez `/` dans Copilot Chat pour voir les slash commands disponibles:
+
+| Slash Command | Description |
+|---------------|-------------|
+| `/speckit.specify` | Crée une spécification fonctionnelle |
+| `/speckit.plan` | Crée un plan d'implémentation |
+| `/speckit.tasks` | Génère la liste des tâches |
+| `/speckit.implement` | Exécute les tâches |
+| `/speckit.clarify` | Clarifie les requirements ambigus |
+| `/speckit.validate` | Valide la conformité (sécurité, RGPD, etc.) |
+| `/speckit.memory` | Gère la mémoire projet |
+| `/speckit.help` | Obtient de l'aide sur Spec-Kit |
+
+### Commandes par mots-clés (Alternative)
+
+Vous pouvez aussi utiliser ces phrases dans Copilot Chat:
 
 | Commande | Alias | Description |
 |----------|-------|-------------|
@@ -150,25 +176,30 @@ Utilisez ces phrases dans Copilot Chat pour déclencher les outils MCP:
 ### 2. Créer une spécification
 
 ```text
+/speckit.specify pour un système de notifications push
+```
+
+Ou avec la commande par mots-clés:
+```text
 speckit: spec pour un système de notifications push
 ```
 
 ### 3. Planifier l'implémentation
 
 ```text
-speckit: plan
+/speckit.plan
 ```
 
 ### 4. Générer les tâches
 
 ```text
-speckit: tasks
+/speckit.tasks
 ```
 
 ### 5. Implémenter
 
 ```text
-speckit: implement
+/speckit.implement
 ```
 
 ---

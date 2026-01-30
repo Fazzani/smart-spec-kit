@@ -10,6 +10,7 @@ import * as path from "node:path";
 
 // Directory constants
 const GITHUB_DIR = ".github";
+const GITHUB_PROMPTS_DIR = "prompts";  // For slash commands
 const COPILOT_INSTRUCTIONS = "copilot-instructions.md";
 const SPEC_KIT_DIR = ".spec-kit";
 const PROMPTS_DIR = "prompts";
@@ -146,6 +147,26 @@ export async function installStarterKit(
           result.created.push(`${GITHUB_DIR}/${COPILOT_INSTRUCTIONS}`);
         } catch (error) {
           result.errors.push(`Failed to copy copilot-instructions: ${error}`);
+          result.success = false;
+        }
+      }
+    }
+
+    // Copy GitHub prompts (slash commands) to .github/prompts/
+    const githubPromptsSrc = path.join(starterKitPath, "github-prompts");
+    const githubPromptsDest = path.join(projectPath, GITHUB_DIR, GITHUB_PROMPTS_DIR);
+
+    if (await exists(githubPromptsSrc)) {
+      const githubPromptsExist = await exists(githubPromptsDest);
+      
+      if (githubPromptsExist && !options.force) {
+        result.skipped.push(`${GITHUB_DIR}/${GITHUB_PROMPTS_DIR}`);
+      } else {
+        try {
+          await copyDir(githubPromptsSrc, githubPromptsDest);
+          result.created.push(`${GITHUB_DIR}/${GITHUB_PROMPTS_DIR} (slash commands)`);
+        } catch (error) {
+          result.errors.push(`Failed to copy GitHub prompts: ${error}`);
           result.success = false;
         }
       }
@@ -307,7 +328,16 @@ export function formatInstallReport(result: InstallResult, projectPath: string):
   report += "```\n";
   report += `${path.basename(projectPath)}/\n`;
   report += "├── .github/\n";
-  report += "│   └── copilot-instructions.md  # Instructions for Copilot\n";
+  report += "│   ├── prompts/                  # Slash commands for Copilot\n";
+  report += "│   │   ├── speckit.specify.prompt.md\n";
+  report += "│   │   ├── speckit.plan.prompt.md\n";
+  report += "│   │   ├── speckit.tasks.prompt.md\n";
+  report += "│   │   ├── speckit.implement.prompt.md\n";
+  report += "│   │   ├── speckit.clarify.prompt.md\n";
+  report += "│   │   ├── speckit.validate.prompt.md\n";
+  report += "│   │   ├── speckit.memory.prompt.md\n";
+  report += "│   │   └── speckit.help.prompt.md\n";
+  report += "│   └── copilot-instructions.md   # Instructions for Copilot\n";
   report += "├── .spec-kit/\n";
   report += "│   ├── prompts/             # Customizable prompts (read by MCP)\n";
   report += "│   │   ├── specify.md\n";
@@ -335,25 +365,31 @@ export function formatInstallReport(result: InstallResult, projectPath: string):
   report += "## Next Steps\n\n";
   report += "1. **Edit your constitution**: `.spec-kit/memory/constitution.md`\n";
   report += "2. **Customize validation rules**: `.spec-kit/rules/`\n";
-  report += "3. **Use spec-kit commands** in Copilot Chat:\n";
-  report += "   - `speckit: spec` - Create a specification\n";
-  report += "   - `speckit: plan` - Create implementation plan\n";
-  report += "   - `speckit: tasks` - Generate task breakdown\n";
-  report += "   - `speckit: implement` - Start implementation\n";
-  report += "   - `speckit: validate security` - Validate against security rules\n";
-  report += "   - `speckit: validate rgpd` - Validate against RGPD rules\n\n";
+  report += "3. **Use slash commands** in Copilot Chat:\n";
+  report += "   - `/speckit.specify` - Create a specification\n";
+  report += "   - `/speckit.plan` - Create implementation plan\n";
+  report += "   - `/speckit.tasks` - Generate task breakdown\n";
+  report += "   - `/speckit.implement` - Start implementation\n";
+  report += "   - `/speckit.validate` - Validate against rules\n";
+  report += "   - `/speckit.help` - Get help\n\n";
 
-  report += "## Available Commands\n\n";
-  report += "| Command | Description |\n";
-  report += "|---------|-------------|\n";
-  report += "| `speckit: spec` | Create specification from requirements |\n";
-  report += "| `speckit: clarify` | Clarify ambiguous requirements |\n";
-  report += "| `speckit: plan` | Create technical implementation plan |\n";
-  report += "| `speckit: tasks` | Generate task breakdown |\n";
-  report += "| `speckit: implement` | Execute implementation tasks |\n";
-  report += "| `speckit: validate` | Validate against customizable rules |\n";
-  report += "| `speckit: memory` | Manage project memory and context |\n";
-  report += "| `speckit: help` | Get help and documentation |\n";
+  report += "## Available Slash Commands\n\n";
+  report += "| Slash Command | Description |\n";
+  report += "|---------------|-------------|\n";
+  report += "| `/speckit.specify` | Create specification from requirements |\n";
+  report += "| `/speckit.clarify` | Clarify ambiguous requirements |\n";
+  report += "| `/speckit.plan` | Create technical implementation plan |\n";
+  report += "| `/speckit.tasks` | Generate task breakdown |\n";
+  report += "| `/speckit.implement` | Execute implementation tasks |\n";
+  report += "| `/speckit.validate` | Validate against customizable rules |\n";
+  report += "| `/speckit.memory` | Manage project memory and context |\n";
+  report += "| `/speckit.help` | Get help and documentation |\n\n";
+
+  report += "## Alternative: Keyword Commands\n\n";
+  report += "You can also use keyword-based commands:\n";
+  report += "- `speckit: spec` or `créer une spec`\n";
+  report += "- `speckit: plan` or `planifier`\n";
+  report += "- `speckit: implement` or `implémenter`\n";
 
   return report;
 }
@@ -367,6 +403,7 @@ export async function isSpecKitInstalled(projectPath: string): Promise<{
   hasTemplates: boolean;
   hasMemory: boolean;
   hasSpecs: boolean;
+  hasSlashCommands: boolean;
 }> {
   return {
     hasPrompts: await exists(path.join(projectPath, SPEC_KIT_DIR, PROMPTS_DIR)),
@@ -374,5 +411,6 @@ export async function isSpecKitInstalled(projectPath: string): Promise<{
     hasTemplates: await exists(path.join(projectPath, SPEC_KIT_DIR, TEMPLATES_DIR)),
     hasMemory: await exists(path.join(projectPath, SPEC_KIT_DIR, MEMORY_DIR)),
     hasSpecs: await exists(path.join(projectPath, SPECS_DIR)),
+    hasSlashCommands: await exists(path.join(projectPath, GITHUB_DIR, GITHUB_PROMPTS_DIR)),
   };
 }

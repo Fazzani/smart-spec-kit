@@ -21,6 +21,7 @@ const assets = [
   'starter-kit/memory',
   'starter-kit/rules',
   'starter-kit/workflows',
+  'starter-kit/github-prompts',  // Slash commands for GitHub Copilot
 ];
 
 // Single files to verify
