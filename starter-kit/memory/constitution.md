@@ -1,114 +1,129 @@
-# Project Constitution
+# [PROJECT_NAME] Constitution
 
 > This document defines the core principles and guidelines that govern all development on this project.
 
 ## Project Information
 
-- **Project Name**: [TO FILL: Your project name]
-- **Ratification Date**: [TO FILL: YYYY-MM-DD]
-- **Last Amended**: [TO FILL: YYYY-MM-DD]
-- **Version**: 1.0.0
+- **Project Name**: [PROJECT_NAME]
+- **Ratification Date**: [RATIFICATION_DATE]
+- **Last Amended**: [LAST_AMENDED_DATE]
+- **Version**: [CONSTITUTION_VERSION]
 
 ---
 
 ## Core Principles
 
-### Principle 1: [TO FILL: Principle Name]
+### [PRINCIPLE_1_NAME]
 
-[TO FILL: Description of this principle and what it means for the project]
+[PRINCIPLE_1_DESCRIPTION]
 
-**Rationale**: [TO FILL: Why this principle matters and what problems it solves]
+**Rationale**: [PRINCIPLE_1_RATIONALE]
 
-**Examples**:
-- [TO FILL: Concrete example of applying this principle]
+**Guidelines**:
+- [PRINCIPLE_1_GUIDELINE_1]
+- [PRINCIPLE_1_GUIDELINE_2]
 
 ---
 
-### Principle 2: Code Quality
+### [PRINCIPLE_2_NAME]
 
-All code must be readable, maintainable, and follow established coding standards.
+[PRINCIPLE_2_DESCRIPTION]
 
-**Rationale**: Consistent, high-quality code reduces bugs, speeds up onboarding, and makes the codebase easier to maintain over time.
+**Rationale**: [PRINCIPLE_2_RATIONALE]
 
 **Guidelines**:
-- Code must pass linting without warnings
-- All public functions must have documentation
-- Complex logic must include explanatory comments
-- Code review required for all changes
+- [PRINCIPLE_2_GUIDELINE_1]
+- [PRINCIPLE_2_GUIDELINE_2]
 
 ---
 
-### Principle 3: Test Coverage
+### [PRINCIPLE_3_NAME]
 
-All features must have appropriate test coverage before being considered complete.
+[PRINCIPLE_3_DESCRIPTION]
 
-**Rationale**: Tests provide confidence that code works as intended and prevents regressions during future changes.
+**Rationale**: [PRINCIPLE_3_RATIONALE]
 
 **Guidelines**:
-- Unit tests for business logic (minimum 80% coverage)
-- Integration tests for API endpoints
-- E2E tests for critical user flows
+- [PRINCIPLE_3_GUIDELINE_1]
+- [PRINCIPLE_3_GUIDELINE_2]
 
 ---
 
-### Principle 4: Documentation First
+### [PRINCIPLE_4_NAME]
 
-Features must be specified before implementation begins.
+[PRINCIPLE_4_DESCRIPTION]
 
-**Rationale**: Clear specifications reduce misunderstandings, prevent rework, and create a shared understanding among all stakeholders.
+**Rationale**: [PRINCIPLE_4_RATIONALE]
 
 **Guidelines**:
-- Use `/speckit.specify` before starting any new feature
-- Keep specifications updated as requirements evolve
-- Link implementation PRs to their specifications
+- [PRINCIPLE_4_GUIDELINE_1]
+- [PRINCIPLE_4_GUIDELINE_2]
 
 ---
 
-### Principle 5: Security by Design
+### [PRINCIPLE_5_NAME]
 
-Security considerations must be part of every feature from the start.
+[PRINCIPLE_5_DESCRIPTION]
 
-**Rationale**: Retrofitting security is expensive and error-prone. Building it in from the start is more effective.
+**Rationale**: [PRINCIPLE_5_RATIONALE]
 
 **Guidelines**:
-- Validate all user inputs
-- Use parameterized queries for database access
-- Follow principle of least privilege
-- Document security considerations in specifications
+- [PRINCIPLE_5_GUIDELINE_1]
+- [PRINCIPLE_5_GUIDELINE_2]
 
 ---
 
 ## Tech Stack Guidelines
 
 ### Preferred Technologies
+
 | Category | Technology | Notes |
 |----------|------------|-------|
-| Language | [TO FILL] | |
-| Framework | [TO FILL] | |
-| Database | [TO FILL] | |
-| Testing | [TO FILL] | |
+| Language | [TECH_LANGUAGE] | [TECH_LANGUAGE_NOTES] |
+| Framework | [TECH_FRAMEWORK] | [TECH_FRAMEWORK_NOTES] |
+| Database | [TECH_DATABASE] | [TECH_DATABASE_NOTES] |
+| Testing | [TECH_TESTING] | [TECH_TESTING_NOTES] |
 
 ### Code Style
-- [TO FILL: Link to style guide or describe key conventions]
+
+[CODE_STYLE_GUIDELINES]
 
 ### Dependencies
+
 - Prefer well-maintained, widely-used packages
 - Document the reason for adding new dependencies
 - Keep dependencies updated regularly
 
 ---
 
+## [SECTION_CUSTOM_NAME]
+
+[SECTION_CUSTOM_CONTENT]
+
+---
+
 ## Governance
 
+[GOVERNANCE_RULES]
+
 ### Amendment Process
+
 1. Propose changes via pull request to this document
-2. Changes require approval from [TO FILL: who approves]
-3. Version number updated according to semantic versioning:
+2. Require approval from [APPROVAL_AUTHORITY]
+3. Document rationale for all changes
+4. Update version following semantic versioning:
    - **MAJOR**: Principle removed or fundamentally changed
    - **MINOR**: New principle or section added
    - **PATCH**: Clarifications and wording improvements
 
+### Compliance Review
+
+- All specifications must align with core principles
+- Validation tools will check compliance automatically (`/speckit.validate`)
+- Non-compliant changes require explicit justification
+
 ### Enforcement
+
 - Code reviews should verify adherence to these principles
 - Automated checks where possible (linting, test coverage)
 - Regular retrospectives to assess principle effectiveness
@@ -119,4 +134,8 @@ Security considerations must be part of every feature from the start.
 
 | Version | Date | Changes |
 |---------|------|---------|
-| 1.0.0 | [TO FILL] | Initial constitution |
+| [CONSTITUTION_VERSION] | [RATIFICATION_DATE] | Initial constitution |
+
+---
+
+Version: [CONSTITUTION_VERSION] | Ratified: [RATIFICATION_DATE] | Last Amended: [LAST_AMENDED_DATE]

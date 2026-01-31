@@ -252,6 +252,127 @@ speckit: help comment créer un template ?
 - Troubleshooting
 - Architecture
 
+### speckit_constitution
+
+**Purpose**: Configure the project constitution with principles, tech stack, and conventions.
+
+**Slash Command**: `/speckit.constitution`
+
+**Keyword Triggers**: `speckit: constitution`, `définir les principes`
+
+**Parameters** (all optional):
+
+- `principles`: Description of project principles or tech stack
+- `projectName`: Name of the project
+
+**Examples**:
+
+```text
+speckit: constitution
+speckit: constitution monorepo TypeScript avec React et Node.js
+speckit: constitution avec principes Clean Architecture et TDD
+/speckit.constitution pour un projet e-commerce
+```
+
+**Behavior**:
+
+1. Loads prompt from `.spec-kit/prompts/constitution.md`
+2. Loads template from `.spec-kit/memory/constitution.md` (with `[PLACEHOLDER]` tokens)
+3. Fills placeholders based on user input or project detection
+4. Returns guidance for completing the constitution
+
+**Constitution Template Structure**:
+
+- `[PROJECT_NAME]` - Name of the project
+- `[RATIFICATION_DATE]` - When the constitution was established
+- `[PRINCIPLE_X_NAME]` / `[PRINCIPLE_X_DESCRIPTION]` - Project principles
+- `[TECH_LANGUAGE]`, `[TECH_FRAMEWORK]`, `[TECH_DATABASE]` - Tech stack
+- `[CODING_STYLE]`, `[TESTING_FRAMEWORK]` - Development practices
+- `[APPROVER_X]` - List of approvers for changes
+
+### speckit_analyze
+
+**Purpose**: Cross-artifact analysis for consistency and traceability.
+
+**Slash Command**: `/speckit.analyze`
+
+**Keyword Triggers**: `speckit: analyze`, `analyser`, `vérifier cohérence`
+
+**Parameters** (all optional):
+
+- `focusArea`: Area to focus the analysis on
+  - `spec-to-plan` - Verify all requirements are covered in plan
+  - `plan-to-tasks` - Verify all components have tasks
+  - `tasks-to-implementation` - Verify all tasks are implemented
+  - `full-traceability` - Complete end-to-end analysis
+
+**Examples**:
+
+```text
+speckit: analyze
+speckit: analyze spec vers plan
+speckit: analyze full-traceability
+/speckit.analyze pour vérifier la traçabilité
+```
+
+**Behavior**:
+
+1. Loads prompt from `.spec-kit/prompts/analyze.md`
+2. Reads all artifacts from `specs/` directory
+3. Performs cross-referencing analysis
+4. Identifies gaps, orphan items, and inconsistencies
+5. Generates analysis report
+
+**Analysis Output**:
+
+- **Traceability Matrix**: Requirements → Plan → Tasks mapping
+- **Gap Analysis**: Missing coverage in downstream artifacts
+- **Orphan Detection**: Items without upstream references
+- **Consistency Issues**: Contradictions between artifacts
+
+### speckit_checklist
+
+**Purpose**: Generate quality checklists for requirements - "unit tests for English".
+
+**Slash Command**: `/speckit.checklist`
+
+**Keyword Triggers**: `speckit: checklist`, `générer checklist`
+
+**Parameters** (all optional):
+
+- `checklistType`: Type of checklist to generate
+  - `requirements` - Quality of requirements (default)
+  - `acceptance` - Acceptance criteria quality
+  - `scenarios` - Scenario coverage
+  - `edge-cases` - Edge case coverage
+- `focusAreas`: Specific areas to focus on (comma-separated)
+
+**Examples**:
+
+```text
+speckit: checklist
+speckit: checklist requirements
+speckit: checklist edge-cases
+/speckit.checklist pour les critères d'acceptation
+```
+
+**Behavior**:
+
+1. Loads prompt from `.spec-kit/prompts/checklist.md`
+2. Loads template from `.spec-kit/templates/checklist-template.md`
+3. Analyzes specification for quality indicators
+4. Generates checklist with `[Pass]`, `[Gap]`, or `[N/A]` status
+5. Output saved to `specs/checklist.md`
+
+**Checklist Categories**:
+
+- **Requirement Completeness**: Are all necessary details present?
+- **Requirement Clarity**: No vague terms (should, may, approximately)?
+- **Requirement Consistency**: No contradictions?
+- **Acceptance Criteria Quality**: Testable and unambiguous?
+- **Scenario Coverage**: Happy path, error cases, edge cases?
+- **Edge Case Coverage**: Boundaries, nulls, concurrent access?
+
 ### speckit_memory
 
 **Purpose**: Manage project memory and context in `.spec-kit/memory/`.

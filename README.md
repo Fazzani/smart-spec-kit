@@ -31,7 +31,9 @@ Plateforme d'orchestration automatisée pour le **développement piloté par les
 - **🔄 Workflows YAML**: Processus personnalisables étape par étape
 - **📋 Templates**: Spécifications fonctionnelles, plans d'implémentation, rapports de bugs
 - **🛡️ Gouvernance Intégrée**: Constitution projet, principes de développement
-- **🔗 Azure DevOps**: Intégration native via MCP
+- **� Checklists de Qualité**: "Unit tests for English" pour valider vos requirements
+- **🔍 Analyse de Traçabilité**: Vérification de cohérence entre specs, plans et tâches
+- **�🔗 Azure DevOps**: Intégration native via MCP
 - **❓ Aide Contextuelle**: Demandez de l'aide sur Spec-Kit directement dans Copilot
 
 ---
@@ -88,16 +90,20 @@ smart-spec-kit-mcp/
 │   │   ├── implement.md
 │   │   ├── clarify.md
 │   │   ├── validate.md
-│   │   └── memory.md
+│   │   ├── memory.md
+│   │   ├── constitution.md       # Configuration de la constitution projet
+│   │   ├── analyze.md            # Analyse de traçabilité
+│   │   └── checklist.md          # Checklist de qualité des requirements
 │   ├── templates/                # Templates de documents
 │   │   ├── functional-spec.md
 │   │   ├── bugfix-report.md
 │   │   ├── plan-template.md
-│   │   └── tasks-template.md
+│   │   ├── tasks-template.md
+│   │   └── checklist-template.md # Template de checklist de qualité
 │   ├── workflows/                # Workflows YAML prédéfinis
-│   │   ├── feature-quick.yaml    # 3-step (spécification rapide)
-│   │   ├── feature-standard.yaml # 4-step (complet)
-│   │   ├── feature-full.yaml     # 5-step (détaillé)
+│   │   ├── feature-quick.yaml    # 2-step (spécification rapide)
+│   │   ├── feature-standard.yaml # 5-step (spec → plan → tasks → analyze → implement)
+│   │   ├── feature-full.yaml     # 7-step (avec validations sécurité/RGPD)
 │   │   ├── bugfix-quick.yaml     # 2-step (bugfix rapide)
 │   │   └── bugfix.yaml
 │   ├── agents/                   # Agents IA customisables
@@ -110,7 +116,7 @@ smart-spec-kit-mcp/
 │   │   ├── security-rules.md     # Règles OWASP
 │   │   └── rgpd-rules.md         # Conformité GDPR
 │   ├── memory/                   # Contexte projet
-│   │   └── constitution.md       # Principes du projet
+│   │   └── constitution.md       # Template de constitution (avec [PLACEHOLDER])
 │   ├── github-prompts/           # Slash commands pour Copilot
 │   │   └── speckit.*.prompt.md
 │   └── copilot-instructions.md   # Guide Copilot
@@ -156,6 +162,9 @@ Tapez `/` dans Copilot Chat pour voir les slash commands disponibles:
 | `/speckit.memory` | Gère la mémoire projet |
 | `/speckit.workflow` | Gère les workflows (list, start, status) |
 | `/speckit.help` | Obtient de l'aide sur Spec-Kit |
+| `/speckit.constitution` | Configure la constitution projet |
+| `/speckit.analyze` | Analyse la cohérence entre artifacts |
+| `/speckit.checklist` | Génère un checklist de qualité des requirements |
 
 ### Commandes par mots-clés (Alternative)
 
@@ -173,6 +182,9 @@ Vous pouvez aussi utiliser ces phrases dans Copilot Chat:
 | `speckit: memory` | `enrichir la mémoire`, `ajouter au contexte` | Gère la mémoire projet |
 | `speckit: help` | `aide sur speckit` | Obtient de l'aide sur Spec-Kit |
 | `speckit: init` | `init` | Initialise Spec-Kit (demande guidé vs auto par défaut) |
+| `speckit: constitution` | `définir les principes` | Configure la constitution projet |
+| `speckit: analyze` | `analyser`, `vérifier cohérence` | Analyse la cohérence entre artifacts |
+| `speckit: checklist` | `générer checklist` | Génère un checklist de qualité des requirements |
 
 ---
 
@@ -180,23 +192,15 @@ Vous pouvez aussi utiliser ces phrases dans Copilot Chat:
 
 ### 1. Établir les principes du projet
 
-Éditez `.spec-kit/memory/constitution.md` avec vos principes de développement:
+Utilisez `/speckit.constitution` pour définir les principes de votre projet:
 
-Astuce: lancez `speckit: init` avec `guided: true` pour un mode questions/réponses (sinon `init` vous demandera le mode). En mode auto, la constitution est remplie depuis la stack détectée.
-
-```markdown
-# Constitution du Projet
-
-## Stack Technique
-- Frontend: React + TypeScript
-- Backend: Node.js + Express
-- Base de données: PostgreSQL
-
-## Principes
-- Clean Architecture
-- Tests obligatoires
-- Code review systématique
+```text
+/speckit.constitution monorepo TypeScript avec React et Node.js
 ```
+
+Ou éditez directement `.spec-kit/memory/constitution.md` avec vos principes de développement.
+
+> **Astuce**: lancez `speckit: init` avec `guided: true` pour un mode questions/réponses (sinon `init` vous demandera le mode). En mode auto, la constitution est remplie depuis la stack détectée.
 
 ### 2. Créer une spécification
 
@@ -210,19 +214,35 @@ Ou avec la commande par mots-clés:
 speckit: spec pour un système de notifications push
 ```
 
-### 3. Planifier l'implémentation
+### 3. Vérifier la qualité des specs (optionnel)
+
+```text
+/speckit.checklist
+```
+
+Cette commande génère un checklist de qualité des requirements - "unit tests for English".
+
+### 4. Planifier l'implémentation
 
 ```text
 /speckit.plan
 ```
 
-### 4. Générer les tâches
+### 5. Générer les tâches
 
 ```text
 /speckit.tasks
 ```
 
-### 5. Implémenter
+### 6. Analyser la cohérence (recommandé)
+
+```text
+/speckit.analyze
+```
+
+Vérifie la traçabilité entre specs → plan → tasks et identifie les gaps.
+
+### 7. Implémenter
 
 ```text
 /speckit.implement

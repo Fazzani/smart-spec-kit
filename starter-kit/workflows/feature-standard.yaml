@@ -1,12 +1,13 @@
 # Feature Standard Workflow
-# Standard workflow: spec → plan → tasks → implement
+# Standard workflow: spec → plan → tasks → analyze → implement
+# Inspired by github/spec-kit methodology
 
 name: feature-standard
 displayName: "Standard Feature"
-description: "Standard feature workflow: specification → plan → tasks → implementation"
+description: "Standard feature workflow: specification → plan → tasks → analysis → implementation"
 
 metadata:
-  version: "3.0"
+  version: "4.0"
   author: "Spec-Kit"
   tags:
     - feature
@@ -28,9 +29,14 @@ steps:
       Include:
       - Feature summary and objectives
       - User stories with acceptance criteria
-      - Functional requirements
+      - Functional requirements (with IDs: FR-001, FR-002...)
       - Non-functional requirements (if applicable)
       - Dependencies and constraints
+      
+      Quality checks:
+      - No implementation details (tech stack, APIs)
+      - Focused on user value and business needs
+      - Maximum 3 [NEEDS CLARIFICATION] markers
       
       Mark unclear sections with [NEEDS CLARIFICATION] for review.
     inputs:
@@ -49,11 +55,11 @@ steps:
       Create a detailed implementation plan based on the specification.
       
       Include:
-      - Technical approach
+      - Technical approach and architecture
       - Components to create/modify
       - Dependencies and order
       - Risk assessment
-      - Estimated effort
+      - Estimated effort per phase
     inputs:
       source: "spec_document"
     outputs:
@@ -72,17 +78,39 @@ steps:
       - Have clear acceptance criteria
       - Be independent when possible
       - Include file paths if known
+      - Map to specific requirements (FR-001, etc.)
     inputs:
       source: "plan_document"
     outputs:
       - tasks_document
-    # Require approval before implementation
-    requiresApproval: true
-    approvalMessage: "⚠️ Review tasks before starting implementation"
 
-  # Step 4: Implement
+  # Step 4: Analyze Cross-Artifact Consistency (NEW)
+  - id: analyze
+    name: "4. Analyze Consistency"
+    action: call_tool
+    tool: speckit_analyze
+    description: |
+      Perform cross-artifact consistency analysis.
+      
+      Checks:
+      - Duplication detection
+      - Ambiguity detection (vague terms)
+      - Coverage gaps (requirements ↔ tasks)
+      - Constitution alignment
+      - Terminology consistency
+      
+      If CRITICAL issues found, resolve before proceeding.
+    inputs:
+      source: "tasks_document"
+    outputs:
+      - analysis_report
+    # Require approval if critical issues found
+    requiresApproval: true
+    approvalMessage: "⚠️ Review analysis findings before implementation"
+
+  # Step 5: Implement
   - id: implement
-    name: "4. Implement"
+    name: "5. Implement"
     action: call_agent
     agent: SpecAgent
     description: |
@@ -92,6 +120,7 @@ steps:
       - Read the task description
       - Implement following project conventions
       - Update task status when complete
+      - Auto-enrich memory with decisions/learnings
       - Proceed to next task
     inputs:
       source: "tasks_document"

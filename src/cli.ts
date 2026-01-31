@@ -201,6 +201,9 @@ async function updateProfileMcpConfig(mcpPath: string, dryRun: boolean): Promise
       "speckit_validate",
       "speckit_memory",
       "speckit_help",
+      "speckit_constitution",
+      "speckit_analyze",
+      "speckit_checklist",
       "list_workflows",
       "start_workflow",
       "advance_workflow",
@@ -554,35 +557,42 @@ ${colors.bold}Prochaines étapes:${colors.reset}
 1. ${colors.cyan}Rechargez VS Code:${colors.reset}
    Ctrl+Shift+P → "Developer: Reload Window"
 
-2. ${colors.cyan}Éditez votre constitution:${colors.reset}
-   .spec-kit/memory/constitution.md
+2. ${colors.cyan}Configurez votre constitution projet:${colors.reset}
+   Utilisez /speckit.constitution pour définir les principes
+   ou éditez directement .spec-kit/memory/constitution.md
 
 3. ${colors.cyan}Utilisez les slash commands dans Copilot Chat:${colors.reset}
    Tapez / et cherchez les commandes /speckit.*
 
 ${colors.bold}Slash Commands Disponibles:${colors.reset}
-   /speckit.init       Initialiser Spec-Kit (guidé ou auto)
-   /speckit.specify    Créer une spécification
-   /speckit.plan       Créer le plan technique
-   /speckit.tasks      Générer les tâches
-   /speckit.implement  Implémenter les tâches
-   /speckit.clarify    Clarifier les requirements
-   /speckit.validate   Valider la conformité (sécurité, RGPD...)
-   /speckit.memory     Gérer la mémoire projet
-   /speckit.help       Obtenir de l'aide sur Spec-Kit
+   /speckit.init          Initialiser Spec-Kit (guidé ou auto)
+   /speckit.constitution  Configurer la constitution projet
+   /speckit.specify       Créer une spécification
+   /speckit.checklist     Générer un checklist de qualité
+   /speckit.plan          Créer le plan technique
+   /speckit.tasks         Générer les tâches
+   /speckit.analyze       Analyser la cohérence des artifacts
+   /speckit.implement     Implémenter les tâches
+   /speckit.clarify       Clarifier les requirements
+   /speckit.validate      Valider la conformité (sécurité, RGPD...)
+   /speckit.memory        Gérer la mémoire projet
+   /speckit.help          Obtenir de l'aide sur Spec-Kit
 
 ${colors.bold}Workflow Recommandé:${colors.reset}
-   1. /speckit.specify pour décrire votre feature
-   2. /speckit.plan pour créer le plan technique
-   3. /speckit.tasks pour générer les tâches
-   4. /speckit.implement pour coder
-   5. /speckit.validate pour vérifier la conformité
-   6. /speckit.memory pour documenter les décisions
+   1. /speckit.constitution pour définir les principes
+   2. /speckit.specify pour décrire votre feature
+   3. /speckit.checklist pour valider la qualité des specs
+   4. /speckit.plan pour créer le plan technique
+   5. /speckit.tasks pour générer les tâches
+   6. /speckit.analyze pour vérifier la traçabilité
+   7. /speckit.implement pour coder
+   8. /speckit.validate pour vérifier la conformité
+   9. /speckit.memory pour documenter les décisions
 
 ${colors.bold}Exemples:${colors.reset}
+   /speckit.constitution monorepo typescript avec tests stricts
    /speckit.specify pour un système d'authentification
-   /speckit.plan
-   /speckit.tasks
+   /speckit.analyze spec vers plan
    /speckit.help comment créer un workflow personnalisé ?
 
 ${colors.bold}Auto-Memory:${colors.reset}

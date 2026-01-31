@@ -58,6 +58,20 @@ const WorkflowArgsSchema = z.object({
   auto: z.boolean().optional().describe("Auto mode - proceed through steps without approval (default: false)"),
 });
 
+const ConstitutionArgsSchema = z.object({
+  principles: z.string().optional().describe("The principles or guidelines to add to the constitution. If not provided, Copilot will guide interactively."),
+  projectName: z.string().optional().describe("The project name for the constitution header."),
+});
+
+const AnalyzeArgsSchema = z.object({
+  focusArea: z.string().optional().describe("Optional focus area for analysis (e.g., 'security', 'coverage', 'consistency'). If not provided, performs full analysis."),
+});
+
+const ChecklistArgsSchema = z.object({
+  checklistType: z.string().optional().describe("Type of checklist to generate: 'ux', 'api', 'security', 'performance', 'accessibility', or custom. Default: derived from context."),
+  focusAreas: z.string().optional().describe("Specific areas to focus on in the checklist."),
+});
+
 /**
  * Load documentation from package
  */
@@ -1250,6 +1264,450 @@ If no workflow is active, you'll see a message indicating no active sessions.`,
         content: [{
           type: "text" as const,
           text: `## ⚠️ Invalid Action\n\nSupported actions: 'list', 'start', 'status'\n\nExample: \`speckit: workflow list\``,
+        }],
+      };
+    }
+  );
+
+  // speckit_constitution - Create or update project constitution
+  server.tool(
+    "speckit_constitution",
+    "Create or update the project constitution with governing principles. Use this when the user says 'speckit: constitution', 'créer constitution', or wants to establish project principles.",
+    ConstitutionArgsSchema.shape,
+    async ({ principles, projectName }) => {
+      const projectPath = process.cwd();
+      const constitutionPath = path.join(projectPath, ".spec-kit", "memory", "constitution.md");
+      
+      // Check setup
+      const setup = await checkSetup(projectPath);
+      if (!setup.ok) {
+        return {
+          content: [{
+            type: "text" as const,
+            text: `## ⚠️ Spec-Kit Setup Required\n\nMissing: ${setup.missing.join(", ")}\n\nRun \`npx smart-spec-kit-mcp setup\` to initialize Spec-Kit in this project.`,
+          }],
+        };
+      }
+
+      // Load existing constitution template
+      let existingConstitution = "";
+      try {
+        existingConstitution = await fs.readFile(constitutionPath, "utf-8");
+      } catch {
+        existingConstitution = "";
+      }
+
+      // Load constitution prompt
+      const constitutionPrompt = await loadPrompt(projectPath, "constitution");
+
+      // Check if constitution is still a template (has placeholders)
+      const hasPlaceholders = existingConstitution.includes("[PROJECT_NAME]") || 
+                              existingConstitution.includes("[PRINCIPLE_") ||
+                              existingConstitution.includes("[TECH_");
+
+      return {
+        content: [{
+          type: "text" as const,
+          text: `## 📜 Project Constitution ${hasPlaceholders ? "Setup" : "Update"}
+
+**File:** \`.spec-kit/memory/constitution.md\`
+**Status:** ${hasPlaceholders ? "⚙️ Template - needs configuration" : "📝 Configured - ready to update"}
+${projectName ? `**Project Name:** ${projectName}` : ""}
+${principles ? `**Principles provided:** Yes` : ""}
+
+---
+
+${constitutionPrompt ? `## Prompt Instructions\n\n${constitutionPrompt}\n\n---\n\n` : ""}
+
+## Current Constitution
+
+\`\`\`markdown
+${existingConstitution.slice(0, 2000)}${existingConstitution.length > 2000 ? "\n...(truncated)" : ""}
+\`\`\`
+
+---
+
+## Copilot Instructions
+
+${hasPlaceholders ? `
+### Initial Setup (Template has placeholders)
+
+Guide the user to fill the constitution template:
+
+1. **Ask for project name** if not provided: "${projectName || "[Ask user]"}"
+2. **Ask for 3-5 core principles**. Examples:
+   - Code Quality (tests, reviews, documentation)
+   - Security First (OWASP, input validation)
+   - User Privacy (GDPR, data minimization)
+   - Performance (response times, scalability)
+   - Accessibility (WCAG compliance)
+3. **Ask for tech stack** (language, framework, database, testing)
+4. **Ask for governance** (who can amend, review process)
+
+For each placeholder \`[PLACEHOLDER_NAME]\`:
+- Replace with the user's answer
+- If user doesn't specify, use sensible defaults based on project context
+
+After filling:
+1. Save to \`.spec-kit/memory/constitution.md\`
+2. Set version to 1.0.0
+3. Set ratification date to today
+4. Show summary of what was configured
+` : `
+### Update Existing Constitution
+
+${principles ? `
+The user wants to update/add these principles:
+\`\`\`
+${principles}
+\`\`\`
+
+1. Parse the new principles
+2. Add/update them in the constitution
+3. Increment version (MINOR for new principles, PATCH for clarifications)
+4. Update "Last Amended" date
+5. Save and confirm changes
+` : `
+Ask the user what they want to update:
+- Add a new principle?
+- Modify an existing principle?
+- Update tech stack?
+- Change governance rules?
+
+Then make the appropriate changes and save.
+`}
+`}
+
+### Version Bump Rules
+- **MAJOR**: Principle removed or fundamentally changed
+- **MINOR**: New principle or section added  
+- **PATCH**: Clarifications and wording improvements
+
+After saving, suggest: "/speckit.specify" to create specs that respect these principles.`,
+        }],
+      };
+    }
+  );
+
+  // speckit_analyze - Cross-artifact consistency analysis
+  server.tool(
+    "speckit_analyze",
+    "Perform cross-artifact consistency and coverage analysis across spec.md, plan.md, and tasks.md. Use this after /speckit.tasks and before /speckit.implement. Triggers: 'speckit: analyze', 'analyser', 'vérifier cohérence'.",
+    AnalyzeArgsSchema.shape,
+    async ({ focusArea }) => {
+      const projectPath = process.cwd();
+      
+      // Check setup
+      const setup = await checkSetup(projectPath);
+      if (!setup.ok) {
+        return {
+          content: [{
+            type: "text" as const,
+            text: `## ⚠️ Spec-Kit Setup Required\n\nMissing: ${setup.missing.join(", ")}\n\nRun \`npx smart-spec-kit-mcp setup\` to initialize Spec-Kit in this project.`,
+          }],
+        };
+      }
+
+      // Find artifacts
+      const specPath = await findRecentSpec(projectPath, "spec");
+      const planPath = await findRecentSpec(projectPath, "plan");
+      const tasksPath = await findRecentSpec(projectPath, "tasks");
+
+      // Load artifacts
+      let specContent = "", planContent = "", tasksContent = "";
+      
+      if (specPath) {
+        try { specContent = await fs.readFile(specPath, "utf-8"); } catch {}
+      }
+      if (planPath) {
+        try { planContent = await fs.readFile(planPath, "utf-8"); } catch {}
+      }
+      if (tasksPath) {
+        try { tasksContent = await fs.readFile(tasksPath, "utf-8"); } catch {}
+      }
+
+      // Load constitution for alignment check
+      const constitution = await loadConstitution(projectPath);
+
+      // Load analyze prompt
+      const analyzePrompt = await loadPrompt(projectPath, "analyze");
+
+      // Check which artifacts exist
+      const hasSpec = !!specContent;
+      const hasPlan = !!planContent;
+      const hasTasks = !!tasksContent;
+
+      if (!hasSpec && !hasPlan && !hasTasks) {
+        return {
+          content: [{
+            type: "text" as const,
+            text: `## ⚠️ No Artifacts Found
+
+No specification, plan, or tasks files found in \`specs/\`.
+
+**Required workflow:**
+1. \`/speckit.specify\` - Create specification
+2. \`/speckit.plan\` - Create plan
+3. \`/speckit.tasks\` - Generate tasks
+4. \`/speckit.analyze\` - Analyze consistency (you are here)
+5. \`/speckit.implement\` - Implement
+
+Please run the preceding steps first.`,
+          }],
+        };
+      }
+
+      return {
+        content: [{
+          type: "text" as const,
+          text: `## 🔍 Cross-Artifact Analysis
+
+**Artifacts Found:**
+- Specification: ${hasSpec ? `✅ ${specPath}` : "❌ Not found"}
+- Plan: ${hasPlan ? `✅ ${planPath}` : "❌ Not found"}
+- Tasks: ${hasTasks ? `✅ ${tasksPath}` : "❌ Not found"}
+${focusArea ? `\n**Focus Area:** ${focusArea}` : ""}
+
+---
+
+${analyzePrompt ? `## Analysis Instructions\n\n${analyzePrompt}\n\n---\n\n` : ""}
+
+## Specification Content
+${hasSpec ? `\`\`\`markdown\n${specContent.slice(0, 2000)}${specContent.length > 2000 ? "\n...(truncated)" : ""}\n\`\`\`` : "*Not available*"}
+
+---
+
+## Plan Content
+${hasPlan ? `\`\`\`markdown\n${planContent.slice(0, 2000)}${planContent.length > 2000 ? "\n...(truncated)" : ""}\n\`\`\`` : "*Not available*"}
+
+---
+
+## Tasks Content
+${hasTasks ? `\`\`\`markdown\n${tasksContent.slice(0, 2000)}${tasksContent.length > 2000 ? "\n...(truncated)" : ""}\n\`\`\`` : "*Not available*"}
+
+---
+
+${constitution ? `## Constitution (for alignment check)\n\n\`\`\`markdown\n${constitution.slice(0, 1000)}${constitution.length > 1000 ? "\n...(truncated)" : ""}\n\`\`\`\n\n---\n\n` : ""}
+
+## Copilot Instructions
+
+**IMPORTANT: This is a READ-ONLY analysis. Do NOT modify any files.**
+
+Perform the following detection passes:
+
+### A. Duplication Detection
+- Identify near-duplicate requirements
+- Flag redundant content across artifacts
+
+### B. Ambiguity Detection  
+- Flag vague terms without measurable criteria (fast, scalable, intuitive)
+- Flag unresolved placeholders (TODO, ???, [NEEDS CLARIFICATION])
+
+### C. Underspecification
+- Requirements missing acceptance criteria
+- Tasks referencing undefined components
+
+### D. Constitution Alignment
+- Any conflicts with MUST principles
+- Missing mandated sections
+
+### E. Coverage Gaps
+- Requirements with zero tasks
+- Tasks with no requirement mapping
+- Non-functional requirements not in tasks
+
+### F. Inconsistency
+- Terminology drift across files
+- Conflicting requirements
+- Task ordering issues
+
+### Severity Classification
+- **CRITICAL**: Constitution violations, missing core coverage
+- **HIGH**: Duplicates, conflicts, untestable criteria  
+- **MEDIUM**: Terminology drift, edge case gaps
+- **LOW**: Style/wording improvements
+
+### Output Format
+
+Generate a report like this:
+
+\`\`\`markdown
+# Specification Analysis Report
+
+**Analyzed:** ${new Date().toISOString().split("T")[0]}
+**Artifacts:** spec.md ${hasSpec ? "✓" : "✗"} | plan.md ${hasPlan ? "✓" : "✗"} | tasks.md ${hasTasks ? "✓" : "✗"}
+
+## Findings Summary
+
+| ID | Category | Severity | Location | Issue | Recommendation |
+|----|----------|----------|----------|-------|----------------|
+
+## Coverage Summary
+
+| Requirement | Tasks | Status |
+|-------------|-------|--------|
+
+## Metrics
+- Total Requirements: X
+- Total Tasks: Y
+- Coverage: Z%
+- Critical Issues: N
+
+## Next Actions
+{Recommendations based on findings}
+\`\`\`
+
+After analysis:
+- If CRITICAL issues: Recommend fixing before \`/speckit.implement\`
+- If only LOW/MEDIUM: Safe to proceed
+- Offer to help fix specific issues`,
+        }],
+      };
+    }
+  );
+
+  // speckit_checklist - Generate requirements quality checklists
+  server.tool(
+    "speckit_checklist",
+    "Generate custom quality checklists that validate requirements completeness, clarity, and consistency - like 'unit tests for English'. Use after /speckit.specify. Triggers: 'speckit: checklist', 'créer checklist', 'liste de contrôle'.",
+    ChecklistArgsSchema.shape,
+    async ({ checklistType, focusAreas }) => {
+      const projectPath = process.cwd();
+      
+      // Check setup
+      const setup = await checkSetup(projectPath);
+      if (!setup.ok) {
+        return {
+          content: [{
+            type: "text" as const,
+            text: `## ⚠️ Spec-Kit Setup Required\n\nMissing: ${setup.missing.join(", ")}\n\nRun \`npx smart-spec-kit-mcp setup\` to initialize Spec-Kit in this project.`,
+          }],
+        };
+      }
+
+      // Find specification
+      const specPath = await findRecentSpec(projectPath, "spec");
+      let specContent = "";
+      if (specPath) {
+        try { specContent = await fs.readFile(specPath, "utf-8"); } catch {}
+      }
+
+      // Find plan if exists
+      const planPath = await findRecentSpec(projectPath, "plan");
+      let planContent = "";
+      if (planPath) {
+        try { planContent = await fs.readFile(planPath, "utf-8"); } catch {}
+      }
+
+      // Load checklist prompt and template
+      const checklistPrompt = await loadPrompt(projectPath, "checklist");
+      const checklistTemplate = await loadTemplate(projectPath, "checklist-template");
+
+      // Determine checklist type
+      const effectiveType = checklistType || "requirements";
+
+      return {
+        content: [{
+          type: "text" as const,
+          text: `## ✅ Requirements Quality Checklist Generator
+
+**Checklist Type:** ${effectiveType}
+${focusAreas ? `**Focus Areas:** ${focusAreas}` : ""}
+${specPath ? `**Specification:** ${specPath}` : "**Warning:** No specification found"}
+
+---
+
+## 📋 Key Concept: "Unit Tests for English"
+
+Checklists test the **QUALITY of requirements**, NOT the implementation.
+
+**❌ WRONG** (testing implementation):
+- "Verify the button clicks correctly"
+- "Test error handling works"
+
+**✅ CORRECT** (testing requirements quality):
+- "Are visual hierarchy requirements defined for all card types?" [Completeness]
+- "Is 'fast loading' quantified with specific timing thresholds?" [Clarity]
+- "Are requirements consistent between spec and plan?" [Consistency]
+
+---
+
+${checklistPrompt ? `## Checklist Instructions\n\n${checklistPrompt}\n\n---\n\n` : ""}
+
+## Specification to Analyze
+${specContent ? `\`\`\`markdown\n${specContent.slice(0, 3000)}${specContent.length > 3000 ? "\n...(truncated)" : ""}\n\`\`\`` : "*No specification found. Run /speckit.specify first.*"}
+
+---
+
+${planContent ? `## Plan (Additional Context)\n\n\`\`\`markdown\n${planContent.slice(0, 1500)}${planContent.length > 1500 ? "\n...(truncated)" : ""}\n\`\`\`\n\n---\n\n` : ""}
+
+${checklistTemplate ? `## Checklist Template\n\n\`\`\`markdown\n${checklistTemplate.slice(0, 2000)}${checklistTemplate.length > 2000 ? "\n...(truncated)" : ""}\n\`\`\`\n\n---\n\n` : ""}
+
+## Copilot Instructions
+
+Generate a requirements quality checklist following these steps:
+
+### 1. Analyze the Specification
+Extract key signals:
+- Feature domain (UX, API, security, etc.)
+- Risk indicators ("critical", "must", "compliance")
+- Stakeholder hints
+- Explicit deliverables
+
+### 2. Ask Clarifying Questions (max 3)
+If needed, ask about:
+- Scope refinement
+- Risk prioritization  
+- Depth calibration (lightweight vs formal)
+- Audience (author, reviewer, QA)
+
+### 3. Generate Checklist Items
+Group by quality dimensions:
+- **Requirement Completeness** - Are all requirements present?
+- **Requirement Clarity** - Are requirements unambiguous?
+- **Requirement Consistency** - Do requirements align?
+- **Acceptance Criteria Quality** - Are criteria measurable?
+- **Scenario Coverage** - Are all flows addressed?
+- **Edge Case Coverage** - Are boundaries defined?
+- **Non-Functional Requirements** - Performance, security specified?
+
+### 4. Item Format
+Each item should:
+- Be a question about requirement quality
+- Include quality dimension tag: [Completeness], [Clarity], [Gap], etc.
+- Reference spec section if checking existing: [Spec §X.Y]
+- Use [Gap] marker for missing requirements
+
+**Pattern:**
+\`- [ ] CHK001 - Are [requirement type] defined for [scenario]? [Quality Dimension, Spec §X.Y]\`
+
+### 5. Output
+Save to \`specs/checklists/${effectiveType}.md\`
+
+Use this structure:
+\`\`\`markdown
+# ${effectiveType.charAt(0).toUpperCase() + effectiveType.slice(1)} Requirements Quality Checklist
+
+**Purpose:** Validate specification quality before implementation
+**Created:** ${new Date().toISOString().split("T")[0]}
+**Feature:** [Link to spec]
+
+## Requirement Completeness
+- [ ] CHK001 - ...
+
+## Requirement Clarity  
+- [ ] CHK002 - ...
+
+## Notes
+- Items marked [Gap] need requirements to be added
+- Complete critical items before /speckit.implement
+\`\`\`
+
+After generating, summarize:
+- Total items
+- Items by category
+- Critical gaps found
+- Suggested next steps`,
         }],
       };
     }

@@ -1,17 +1,19 @@
 # Feature Full Workflow
 # Complete workflow with validation checkpoints
+# Inspired by github/spec-kit methodology
 
 name: feature-full
 displayName: "Feature with Validation"
-description: "Complete feature workflow with security and RGPD validations"
+description: "Complete feature workflow with checklists, analysis, and security/RGPD validations"
 
 metadata:
-  version: "3.0"
+  version: "4.0"
   author: "Spec-Kit"
   tags:
     - feature
     - governance
     - validation
+    - checklist
 
 template: functional-spec.md
 defaultAgent: SpecAgent
@@ -31,10 +33,15 @@ steps:
       Include:
       - Feature summary and objectives
       - User stories with acceptance criteria
-      - Functional requirements
+      - Functional requirements (with IDs: FR-001, FR-002...)
       - Non-functional requirements
       - Data requirements
       - Dependencies and constraints
+      
+      Quality checks:
+      - No implementation details (tech stack, APIs)
+      - All requirements testable and unambiguous
+      - Maximum 3 [NEEDS CLARIFICATION] markers
       
       Mark unclear sections with [NEEDS CLARIFICATION] for review.
     inputs:
@@ -43,19 +50,43 @@ steps:
         required: true
     outputs:
       - spec_document
-    # Require approval before proceeding to validation phase
-    requiresApproval: true
-    approvalMessage: "Review the specification before security/RGPD validation"
 
   # ═══════════════════════════════════════════════════════════════
-  # PHASE 2: VALIDATION
+  # PHASE 2: QUALITY CHECKLIST (NEW)
+  # ═══════════════════════════════════════════════════════════════
+
+  - id: requirements-checklist
+    name: "2. Requirements Quality Checklist"
+    action: call_tool
+    tool: speckit_checklist
+    description: |
+      Generate a requirements quality checklist - "unit tests for English".
+      
+      Validates:
+      - Requirement Completeness
+      - Requirement Clarity (no vague terms)
+      - Requirement Consistency
+      - Acceptance Criteria Quality
+      - Scenario Coverage
+      - Edge Case Coverage
+      
+      Fix any [Gap] items before proceeding.
+    inputs:
+      checklistType: "requirements"
+      source: "spec_document"
+    outputs:
+      - requirements_checklist
+    requiresApproval: true
+    approvalMessage: "Review requirements quality checklist before validation phase"
+
+  # ═══════════════════════════════════════════════════════════════
+  # PHASE 3: VALIDATION
   # ═══════════════════════════════════════════════════════════════
 
   - id: security-review
-    name: "2.1 🔒 Security Review"
+    name: "3.1 🔒 Security Review"
     action: review
     agent: GovAgent
-    # Use subagent for isolated context during security analysis
     useSubagent: true
     description: |
       Security assessment based on the specification:
@@ -81,7 +112,7 @@ steps:
       - security_report
 
   - id: rgpd-review
-    name: "2.2 🛡️ RGPD Review"
+    name: "3.2 🛡️ RGPD Review"
     action: review
     agent: GovAgent
     # Use subagent for isolated context during RGPD analysis
@@ -112,11 +143,11 @@ steps:
     approvalMessage: "Review validation results before creating implementation plan"
 
   # ═══════════════════════════════════════════════════════════════
-  # PHASE 3: PLANNING
+  # PHASE 4: PLANNING
   # ═══════════════════════════════════════════════════════════════
 
   - id: create-plan
-    name: "3. Create Implementation Plan"
+    name: "4. Create Implementation Plan"
     action: call_agent
     agent: PlanAgent
     description: |
@@ -136,11 +167,11 @@ steps:
       - plan_document
 
   # ═══════════════════════════════════════════════════════════════
-  # PHASE 4: TASKS
+  # PHASE 5: TASKS
   # ═══════════════════════════════════════════════════════════════
 
   - id: generate-tasks
-    name: "4. Generate Tasks"
+    name: "5. Generate Tasks"
     action: call_agent
     agent: PlanAgent
     description: |
@@ -155,16 +186,39 @@ steps:
       source: "plan_document"
     outputs:
       - tasks_document
-    # Critical checkpoint before implementation
-    requiresApproval: true
-    approvalMessage: "⚠️ Implementation will begin after approval. Review tasks carefully."
 
   # ═══════════════════════════════════════════════════════════════
-  # PHASE 5: IMPLEMENTATION
+  # PHASE 6: CROSS-ARTIFACT ANALYSIS (NEW)
+  # ═══════════════════════════════════════════════════════════════
+
+  - id: analyze
+    name: "6. Cross-Artifact Analysis"
+    action: call_tool
+    tool: speckit_analyze
+    description: |
+      Analyze all artifacts for consistency and completeness.
+      
+      Verifies:
+      - Spec → Plan traceability (all requirements covered)
+      - Plan → Tasks traceability (all components have tasks)
+      - Validation findings addressed in plan
+      - Security/RGPD measures reflected in tasks
+      
+      Identify any gaps or inconsistencies before implementation.
+    inputs:
+      focusArea: "full-traceability"
+    outputs:
+      - analysis_report
+    # Critical checkpoint before implementation
+    requiresApproval: true
+    approvalMessage: "⚠️ Implementation will begin after approval. Review analysis report carefully."
+
+  # ═══════════════════════════════════════════════════════════════
+  # PHASE 7: IMPLEMENTATION
   # ═══════════════════════════════════════════════════════════════
 
   - id: implement
-    name: "5. Implement"
+    name: "7. Implement"
     action: call_agent
     agent: SpecAgent
     description: |

@@ -8,9 +8,12 @@ Users can type `/speckit.` to see available slash commands:
 
 | Slash Command | MCP Tool | Description |
 |---------------|----------|-------------|
+| `/speckit.constitution` | `speckit_constitution` | Create or update project governing principles |
 | `/speckit.specify` | `speckit_specify` | Create a functional specification |
 | `/speckit.plan` | `speckit_plan` | Create an implementation plan |
 | `/speckit.tasks` | `speckit_tasks` | Generate task breakdown |
+| `/speckit.analyze` | `speckit_analyze` | Cross-artifact consistency analysis |
+| `/speckit.checklist` | `speckit_checklist` | Generate requirements quality checklists |
 | `/speckit.implement` | `speckit_implement` | Implement tasks |
 | `/speckit.clarify` | `speckit_clarify` | Clarify requirements |
 | `/speckit.validate` | `speckit_validate` | Validate compliance (security, RGPD, etc.) |
@@ -24,9 +27,12 @@ When the user mentions **"speckit:"** followed by a command, or uses these keywo
 
 | User Says | MCP Tool | Description |
 |-----------|----------|-------------|
+| `speckit: constitution`, `créer constitution`, `principes du projet` | `speckit_constitution` | Create or update project constitution |
 | `speckit: spec`, `speckit: specify`, `créer une spec` | `speckit_specify` | Create a functional specification |
 | `speckit: plan`, `planifier`, `créer un plan` | `speckit_plan` | Create an implementation plan |
 | `speckit: tasks`, `générer les tâches`, `créer les tâches` | `speckit_tasks` | Generate task breakdown |
+| `speckit: analyze`, `analyser`, `vérifier cohérence` | `speckit_analyze` | Cross-artifact consistency analysis |
+| `speckit: checklist`, `créer checklist`, `liste de contrôle` | `speckit_checklist` | Generate requirements quality checklist |
 | `speckit: implement`, `implémenter`, `coder` | `speckit_implement` | Implement tasks |
 | `speckit: clarify`, `clarifier`, `préciser` | `speckit_clarify` | Clarify requirements |
 | `speckit: validate`, `valider`, `vérifier` | `speckit_validate` | Validate compliance (security, RGPD, etc.) |
@@ -48,16 +54,20 @@ When the user asks questions about Spec-Kit (how to use it, how to customize, ho
 The typical spec-kit workflow is:
 
 ```
-speckit_specify → speckit_plan → speckit_tasks → speckit_implement
-                      ↑
-               speckit_clarify (if needed)
+speckit_constitution → speckit_specify → speckit_plan → speckit_tasks → speckit_analyze → speckit_implement
+                              ↑                                   ↑
+                       speckit_clarify                    speckit_checklist
+                       (if needed)                         (optional)
 ```
 
-1. **Specify**: Transform requirements into a structured specification
-2. **Plan**: Create a technical implementation plan from the spec
-3. **Tasks**: Break down the plan into atomic, actionable tasks  
-4. **Implement**: Execute tasks one by one
-5. **Clarify**: Resolve ambiguities at any point
+1. **Constitution**: Establish project principles and guidelines (once per project)
+2. **Specify**: Transform requirements into a structured specification
+3. **Plan**: Create a technical implementation plan from the spec
+4. **Tasks**: Break down the plan into atomic, actionable tasks
+5. **Analyze**: Check cross-artifact consistency (optional but recommended)
+6. **Implement**: Execute tasks one by one
+7. **Clarify**: Resolve ambiguities at any point
+8. **Checklist**: Generate quality checklists for specific domains
 
 ## Project Structure
 

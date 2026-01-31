@@ -58,17 +58,74 @@ Only use `[NEEDS CLARIFICATION]` when:
 
 ## 4. Quality Checks
 
-Before saving:
-- Every requirement is testable and unambiguous
-- Each requirement has a unique ID
-- Acceptance criteria are in Given/When/Then format
-- No undefined placeholders (except intentional `[NEEDS CLARIFICATION]`)
+Before saving, validate against this checklist:
 
-## 5. Output
+### Content Quality
+- [ ] No implementation details (languages, frameworks, APIs)
+- [ ] Focused on user value and business needs
+- [ ] Written for non-technical stakeholders
+- [ ] All mandatory sections completed
+
+### Requirement Completeness
+- [ ] No unresolved `[NEEDS CLARIFICATION]` markers remain (max 3 allowed)
+- [ ] Requirements are testable and unambiguous
+- [ ] Success criteria are measurable
+- [ ] Success criteria are technology-agnostic (no implementation details)
+- [ ] All acceptance scenarios are defined
+- [ ] Edge cases are identified
+- [ ] Scope is clearly bounded
+- [ ] Dependencies and assumptions identified
+
+### Feature Readiness
+- [ ] All functional requirements have clear acceptance criteria
+- [ ] User scenarios cover primary flows
+- [ ] Feature meets measurable outcomes defined in Success Criteria
+- [ ] No implementation details leak into specification
+
+**If validation fails**: Update the spec to address issues (max 3 iterations).
+
+**If `[NEEDS CLARIFICATION]` markers remain** (max 3):
+Present options to user in this format:
+
+```markdown
+## Question [N]: [Topic]
+
+**Context**: [Quote relevant spec section]
+**What we need to know**: [Specific question]
+
+| Option | Answer | Implications |
+|--------|--------|--------------|
+| A | [First suggested answer] | [What this means] |
+| B | [Second suggested answer] | [What this means] |
+| Custom | Provide your own answer | [How to provide] |
+
+**Your choice**: _[Wait for user response]_
+```
+
+## 5. Success Criteria Guidelines
+
+Success criteria must be:
+1. **Measurable**: Include specific metrics (time, percentage, count, rate)
+2. **Technology-agnostic**: No mention of frameworks, languages, databases, or tools
+3. **User-focused**: Describe outcomes from user/business perspective
+4. **Verifiable**: Can be tested/validated without knowing implementation
+
+✅ **Good examples**:
+- "Users can complete checkout in under 3 minutes"
+- "System supports 10,000 concurrent users"
+- "95% of searches return results in under 1 second"
+
+❌ **Bad examples** (implementation-focused):
+- "API response time is under 200ms"
+- "Database can handle 1000 TPS"
+- "React components render efficiently"
+
+## 6. Output
 
 Save to `specs/{context_id}-spec.md` and report:
 - Path to created specification
 - Summary of requirements captured
 - List of assumptions made
-- Any `[NEEDS CLARIFICATION]` items
-- Next step: `speckit_plan` to create implementation plan
+- Any `[NEEDS CLARIFICATION]` items (max 3)
+- Validation checklist results
+- Next step: `/speckit.clarify` (if clarifications needed) or `/speckit.plan`
