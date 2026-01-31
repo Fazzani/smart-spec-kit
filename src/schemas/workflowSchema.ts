@@ -44,6 +44,15 @@ export const WorkflowStepSchema = z.object({
   inputs: FlexibleInputsSchema.describe("Input parameters for the step"),
   outputs: z.array(z.string()).optional().describe("Expected outputs from this step"),
   next: z.string().optional().describe("Next step ID (if not sequential)"),
+  /** Whether this step requires user approval before proceeding to next step */
+  requiresApproval: z.boolean().optional().default(false)
+    .describe("If true, user must approve before proceeding to next step"),
+  /** Custom approval message to show when requiresApproval is true */
+  approvalMessage: z.string().optional()
+    .describe("Custom message to show when asking for approval"),
+  /** Whether to use a subagent for isolated context execution */
+  useSubagent: z.boolean().optional().default(false)
+    .describe("If true, execute this step in a subagent with isolated context"),
 });
 
 /**

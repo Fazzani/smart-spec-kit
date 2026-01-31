@@ -6,7 +6,7 @@ displayName: "Standard Feature"
 description: "Standard feature workflow: specification → plan → tasks → implementation"
 
 metadata:
-  version: "2.0"
+  version: "3.0"
   author: "Spec-Kit"
   tags:
     - feature
@@ -76,6 +76,9 @@ steps:
       source: "plan_document"
     outputs:
       - tasks_document
+    # Require approval before implementation
+    requiresApproval: true
+    approvalMessage: "⚠️ Review tasks before starting implementation"
 
   # Step 4: Implement
   - id: implement

@@ -6,7 +6,7 @@ displayName: "Feature with Validation"
 description: "Complete feature workflow with security and RGPD validations"
 
 metadata:
-  version: "2.0"
+  version: "3.0"
   author: "Spec-Kit"
   tags:
     - feature
@@ -43,6 +43,9 @@ steps:
         required: true
     outputs:
       - spec_document
+    # Require approval before proceeding to validation phase
+    requiresApproval: true
+    approvalMessage: "Review the specification before security/RGPD validation"
 
   # ═══════════════════════════════════════════════════════════════
   # PHASE 2: VALIDATION
@@ -52,6 +55,8 @@ steps:
     name: "2.1 🔒 Security Review"
     action: review
     agent: GovAgent
+    # Use subagent for isolated context during security analysis
+    useSubagent: true
     description: |
       Security assessment based on the specification:
       
@@ -79,6 +84,8 @@ steps:
     name: "2.2 🛡️ RGPD Review"
     action: review
     agent: GovAgent
+    # Use subagent for isolated context during RGPD analysis
+    useSubagent: true
     description: |
       GDPR/RGPD compliance check:
       
@@ -100,6 +107,9 @@ steps:
       spec: "spec_document"
     outputs:
       - rgpd_report
+    # Require approval after validations before planning
+    requiresApproval: true
+    approvalMessage: "Review validation results before creating implementation plan"
 
   # ═══════════════════════════════════════════════════════════════
   # PHASE 3: PLANNING
@@ -145,6 +155,9 @@ steps:
       source: "plan_document"
     outputs:
       - tasks_document
+    # Critical checkpoint before implementation
+    requiresApproval: true
+    approvalMessage: "⚠️ Implementation will begin after approval. Review tasks carefully."
 
   # ═══════════════════════════════════════════════════════════════
   # PHASE 5: IMPLEMENTATION

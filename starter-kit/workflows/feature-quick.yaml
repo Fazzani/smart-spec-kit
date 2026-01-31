@@ -6,7 +6,7 @@ displayName: "Quick Feature (Quick Win)"
 description: "Lightweight workflow for simple features that don't need full specification"
 
 metadata:
-  version: "1.0"
+  version: "2.0"
   author: "Spec-Kit"
   tags:
     - feature
@@ -18,7 +18,7 @@ defaultAgent: SpecAgent
 
 steps:
   - id: quick-spec
-    name: "Quick Specification"
+    name: "1. Quick Specification"
     action: call_agent
     agent: SpecAgent
     description: |
@@ -35,9 +35,12 @@ steps:
         required: true
     outputs:
       - quick_spec
+    # Require approval before implementation
+    requiresApproval: true
+    approvalMessage: "Ready to implement? Review the quick spec first."
 
   - id: implement
-    name: "Implement"
+    name: "2. Implement"
     action: call_agent
     agent: SpecAgent
     description: |
@@ -53,7 +56,7 @@ steps:
       - implementation
 
   - id: auto-memory
-    name: "Update Memory"
+    name: "3. Update Memory"
     action: call_agent
     agent: SpecAgent
     description: |

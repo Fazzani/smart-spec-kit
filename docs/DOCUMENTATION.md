@@ -538,8 +538,81 @@ steps:
 
 - `call_agent` - Call an AI agent
 - `fetch_ado` - Fetch Azure DevOps work item
-- `save_artifact` - Save to file
-- `validate` - Validate output
+- `review` - Review/validation step (security, RGPD, etc.)
+- `create_file` - Save artifact to file
+- `generate_content` - Generate content without an agent
+
+**Step Properties**:
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `id` | string | Unique step identifier |
+| `name` | string | Human-readable step name |
+| `action` | string | Action type (see above) |
+| `agent` | string | Agent to use (SpecAgent, PlanAgent, GovAgent, TestAgent) |
+| `description` | string | Instructions for the step |
+| `inputs` | array | Input parameters |
+| `outputs` | array | Output artifacts |
+| `dependsOn` | array | Steps that must complete first |
+| `requiresApproval` | boolean | **NEW** - Pause for user approval after this step |
+| `approvalMessage` | string | **NEW** - Custom message to show at approval prompt |
+| `useSubagent` | boolean | **NEW** - Run in isolated context using VS Code subagent |
+
+### Approval Gates
+
+Use `requiresApproval: true` to create checkpoints in your workflow. This pauses execution and asks the user to review the output before continuing.
+
+```yaml
+steps:
+  - id: generate-tasks
+    name: "Generate Tasks"
+    action: call_agent
+    agent: PlanAgent
+    description: "Break down the plan into tasks"
+    outputs:
+      - tasks_document
+    # Pause here for review
+    requiresApproval: true
+    approvalMessage: "⚠️ Review tasks before starting implementation"
+
+  - id: implement
+    name: "Implement"
+    action: call_agent
+    agent: SpecAgent
+    description: "Implement the tasks"
+```
+
+**When to use approval gates**:
+- Before implementation phases
+- After security/compliance reviews
+- Before destructive operations
+- At phase transitions (spec → plan → tasks → implement)
+
+### Subagent Execution
+
+Use `useSubagent: true` for steps that benefit from isolated context:
+
+```yaml
+steps:
+  - id: security-review
+    name: "Security Review"
+    action: review
+    agent: GovAgent
+    # Run in isolated context to avoid context pollution
+    useSubagent: true
+    description: "Deep security analysis"
+```
+
+**Benefits of subagents**:
+- **Isolated context**: Doesn't pollute main conversation
+- **Deep analysis**: Can perform extensive research without cluttering the chat
+- **Focused results**: Only the final analysis returns to main context
+
+**Recommended for**:
+- Security reviews
+- RGPD/compliance analysis
+- Code audits
+- Deep research tasks
 
 **Available Agents** (System Prompts):
 

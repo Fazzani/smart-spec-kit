@@ -6,7 +6,7 @@ displayName: "Quick Bug Fix"
 description: "Fast track workflow for simple bug fixes - analyze, fix, verify"
 
 metadata:
-  version: "1.0"
+  version: "2.0"
   author: "Spec-Kit"
   tags:
     - bugfix
@@ -18,24 +18,40 @@ defaultAgent: SpecAgent
 
 steps:
   - id: analyze-fix
-    name: "Analyze & Fix"
+    name: "1. Analyze & Plan Fix"
     action: call_agent
     agent: SpecAgent
     description: |
-      Quick bug analysis and fix:
+      Quick bug analysis:
       
       1. **Identify the bug**: Understand what's broken
       2. **Find root cause**: Locate the problematic code
-      3. **Implement fix**: Make minimal, focused changes
-      4. **Verify**: Confirm the fix works
+      3. **Propose fix**: Describe the minimal changes needed
       
       Keep it simple - no lengthy documentation needed.
     outputs:
       - bug_analysis
+    # Require approval before applying fix
+    requiresApproval: true
+    approvalMessage: "Apply the fix? Review the analysis first."
+
+  - id: implement-fix
+    name: "2. Implement Fix"
+    action: call_agent
+    agent: SpecAgent
+    description: |
+      Apply the bug fix:
+      
+      - Make minimal, focused changes
+      - Follow project conventions
+      - Verify the fix works
+    inputs:
+      source: "bug_analysis"
+    outputs:
       - code_fix
 
   - id: auto-memory
-    name: "Update Memory"
+    name: "3. Update Memory"
     action: call_agent
     agent: SpecAgent
     description: |

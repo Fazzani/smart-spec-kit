@@ -273,7 +273,70 @@ steps:
     action: call_agent
     agent: PlanAgent
     description: "Génère le plan"
+    # Demande approbation avant l'étape suivante
+    requiresApproval: true
+    approvalMessage: "⚠️ Vérifiez le plan avant l'implémentation"
+
+  - id: security-review
+    name: "Revue Sécurité"
+    action: review
+    agent: GovAgent
+    # Exécute dans un contexte isolé
+    useSubagent: true
+    description: "Analyse de sécurité approfondie"
 ```
+
+#### Propriétés des Étapes
+
+| Propriété | Type | Description |
+|-----------|------|-------------|
+| `id` | string | Identifiant unique de l'étape |
+| `name` | string | Nom affiché |
+| `action` | string | `call_agent`, `review`, `fetch_ado`, `create_file` |
+| `agent` | string | Agent à utiliser |
+| `requiresApproval` | boolean | **⏸️ Pause pour validation utilisateur** |
+| `approvalMessage` | string | Message personnalisé à l'approbation |
+| `useSubagent` | boolean | **🔄 Exécution en contexte isolé** |
+
+#### Points de Validation (Approval Gates)
+
+Utilisez `requiresApproval: true` pour créer des checkpoints :
+
+```yaml
+steps:
+  - id: generate-tasks
+    name: "Générer les tâches"
+    action: call_agent
+    outputs: [tasks_document]
+    requiresApproval: true  # ⏸️ Pause ici
+    approvalMessage: "Vérifiez les tâches avant implémentation"
+
+  - id: implement
+    name: "Implémenter"
+    action: call_agent
+```
+
+**Quand utiliser les approval gates** :
+- Avant les phases d'implémentation
+- Après les revues sécurité/compliance
+- Aux transitions de phase (spec → plan → tasks → implement)
+
+#### Exécution en Subagent
+
+Utilisez `useSubagent: true` pour les analyses approfondies :
+
+```yaml
+steps:
+  - id: security-review
+    action: review
+    agent: GovAgent
+    useSubagent: true  # 🔄 Contexte isolé
+```
+
+**Avantages** :
+- Contexte isolé (ne pollue pas la conversation principale)
+- Analyse approfondie sans encombrer le chat
+- Seul le résultat final rejoint le contexte principal
 
 #### À propos des "Agents"
 

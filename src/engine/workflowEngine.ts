@@ -196,6 +196,15 @@ async function generateStepAction(
   }
 
   const progressInfo = `[${stepIndex + 1}/${workflow.steps.length}]`;
+  const nextStep = workflow.steps[stepIndex + 1];
+  const nextStepName = nextStep?.name ?? "Fin du workflow";
+  
+  // Check if step requires approval after completion
+  const requiresApproval = step.requiresApproval === true;
+  const approvalMessage = step.approvalMessage ?? `Continuer vers: **${nextStepName}** ?`;
+  
+  // Check if step should use subagent for isolated context
+  const useSubagent = step.useSubagent === true;
 
   switch (step.action) {
     case "fetch_ado":
@@ -213,7 +222,7 @@ ${step.description}
         nextAction: {
           type: "call_mcp_tool",
           description: "Récupération du work item Azure DevOps",
-          requiresApproval: true,
+          requiresApproval: requiresApproval,
           copilotInstruction: `
 **INSTRUCTION POUR COPILOT:**
 
@@ -227,6 +236,7 @@ Exécute cette action puis rappelle-moi avec le résultat:
 \`\`\`
 Commande: Récupère le work item #${session.contextId} depuis Azure DevOps
 \`\`\`
+${requiresApproval ? generateApprovalPrompt(session.sessionId, approvalMessage, nextStepName) : ""}
           `.trim(),
         },
       };
@@ -246,13 +256,14 @@ Commande: Récupère le work item #${session.contextId} depuis Azure DevOps
 ${step.description}
 
 **Agent:** ${agent.displayName}
+${useSubagent ? "**Mode:** Subagent (contexte isolé)" : ""}
 **Action:** Génération automatique en cours...
         `.trim(),
         nextAction: {
           type: "call_mcp_tool",
           description: `Génération avec ${agent.displayName}`,
-          requiresApproval: true,
-          copilotInstruction: generateAgentInstruction(session, step, agent, template),
+          requiresApproval: requiresApproval,
+          copilotInstruction: generateAgentInstruction(session, step, agent, template, useSubagent, requiresApproval, approvalMessage, nextStepName),
         },
       };
 
@@ -269,13 +280,14 @@ ${step.description}
 ${step.description}
 
 **Agent:** ${reviewAgent.displayName}
+${useSubagent ? "**Mode:** Subagent (contexte isolé)" : ""}
 **Action:** Validation en cours...
         `.trim(),
         nextAction: {
           type: "call_mcp_tool",
           description: `Validation avec ${reviewAgent.displayName}`,
-          requiresApproval: true,
-          copilotInstruction: generateReviewInstruction(session, step, reviewAgent),
+          requiresApproval: requiresApproval,
+          copilotInstruction: generateReviewInstruction(session, step, reviewAgent, useSubagent, requiresApproval, approvalMessage, nextStepName),
         },
       };
 
@@ -330,21 +342,64 @@ Puis appelle \`spec-kit\` → \`execute_step\` avec:
 }
 
 /**
+ * Generate approval prompt to append to instructions
+ */
+function generateApprovalPrompt(sessionId: string, message: string, nextStepName: string): string {
+  return `
+
+---
+## ⚠️ APPROBATION REQUISE
+
+${message}
+
+**Après avoir terminé cette étape, DEMANDE à l'utilisateur:**
+> 🚦 Voulez-vous continuer vers l'étape suivante: **${nextStepName}** ?
+> - Tapez **"oui"** pour continuer
+> - Tapez **"non"** pour mettre en pause
+> - Tapez **"modifier"** pour ajuster
+
+**Si l'utilisateur approuve**, appelle \`spec-kit\` → \`execute_step\` avec:
+- sessionId: "${sessionId}"
+- previousOutput: [LE RÉSULTAT DE CETTE ÉTAPE]
+
+**Si l'utilisateur refuse**, réponds: "Workflow mis en pause. Reprenez avec \`workflow_status\`."
+`;
+}
+
+/**
  * Generate instruction for agent-based content generation
  */
 function generateAgentInstruction(
   session: WorkflowSession,
   step: { id: string; name: string; description: string },
   agent: { name: string; displayName: string; systemPrompt: string },
-  template: string
+  template: string,
+  useSubagent: boolean,
+  requiresApproval: boolean,
+  approvalMessage: string,
+  nextStepName: string
 ): string {
   const workItemData = session.data.workItemData 
     ? JSON.stringify(session.data.workItemData, null, 2)
     : "[Données non disponibles - récupérez d'abord le work item]";
 
+  const subagentPrefix = useSubagent ? `
+> **MODE SUBAGENT**: Utilise \`#runSubagent\` pour exécuter cette tâche avec un contexte isolé.
+> Cela évite la confusion de contexte et garde le chat principal léger.
+
+` : "";
+
+  const approvalSuffix = requiresApproval 
+    ? generateApprovalPrompt(session.sessionId, approvalMessage, nextStepName)
+    : `
+4. Une fois terminé, appelle \`spec-kit\` → \`execute_step\` avec:
+   - sessionId: "${session.sessionId}"
+   - previousOutput: [LE CONTENU MARKDOWN GÉNÉRÉ]
+`;
+
   return `
 **INSTRUCTION POUR COPILOT:**
-
+${subagentPrefix}
 Tu es maintenant **${agent.displayName}**. Exécute cette tâche:
 
 ---
@@ -370,9 +425,7 @@ ${template.length > 1500 ? "\n[...template tronqué...]" : ""}
 1. Génère le contenu en suivant le template
 2. Remplis les sections avec les données du work item
 3. Marque les sections incertaines avec [TO FILL]
-4. Une fois terminé, appelle \`spec-kit\` → \`execute_step\` avec:
-   - sessionId: "${session.sessionId}"
-   - previousOutput: [LE CONTENU MARKDOWN GÉNÉRÉ]
+${approvalSuffix}
   `.trim();
 }
 
@@ -382,15 +435,33 @@ ${template.length > 1500 ? "\n[...template tronqué...]" : ""}
 function generateReviewInstruction(
   session: WorkflowSession,
   step: { id: string; name: string; description: string },
-  agent: { name: string; displayName: string; systemPrompt: string }
+  agent: { name: string; displayName: string; systemPrompt: string },
+  useSubagent: boolean,
+  requiresApproval: boolean,
+  approvalMessage: string,
+  nextStepName: string
 ): string {
   const contentToReview = session.data.specification 
     ?? session.data.technicalPlan 
     ?? "[Contenu à reviewer non disponible]";
 
+  const subagentPrefix = useSubagent ? `
+> **MODE SUBAGENT**: Utilise \`#runSubagent\` pour cette revue avec un contexte isolé.
+> Cela permet une analyse indépendante sans pollution du contexte principal.
+
+` : "";
+
+  const approvalSuffix = requiresApproval
+    ? generateApprovalPrompt(session.sessionId, approvalMessage, nextStepName)
+    : `
+5. Appelle \`spec-kit\` → \`execute_step\` avec:
+   - sessionId: "${session.sessionId}"
+   - previousOutput: { "status": "[VERDICT]", "issues": [...], "recommendations": [...] }
+`;
+
   return `
 **INSTRUCTION POUR COPILOT:**
-
+${subagentPrefix}
 Tu es maintenant **${agent.displayName}**. Effectue cette revue:
 
 ---
@@ -411,9 +482,7 @@ ${typeof contentToReview === "string" ? contentToReview.slice(0, 2000) : JSON.st
 2. Liste les points conformes ✅
 3. Liste les problèmes à corriger ❌
 4. Donne un verdict: APPROVED / NEEDS_WORK / REJECTED
-5. Appelle \`spec-kit\` → \`execute_step\` avec:
-   - sessionId: "${session.sessionId}"
-   - previousOutput: { "status": "[VERDICT]", "issues": [...], "recommendations": [...] }
+${approvalSuffix}
   `.trim();
 }
 

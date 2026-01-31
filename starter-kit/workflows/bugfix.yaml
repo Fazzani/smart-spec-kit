@@ -6,7 +6,7 @@ displayName: "Bug Fix"
 description: "Structured workflow for analyzing, fixing, and validating bug corrections"
 
 metadata:
-  version: "2.0"
+  version: "3.0"
   author: "Spec-Kit"
   tags:
     - bugfix
@@ -54,6 +54,9 @@ steps:
       source: "root_cause_analysis"
     outputs:
       - fix_plan
+    # Require approval before implementing the fix
+    requiresApproval: true
+    approvalMessage: "Review the fix plan before applying changes"
 
   # Step 3: Implement Fix
   - id: implement-fix
@@ -77,6 +80,8 @@ steps:
     name: "4. Verify Fix"
     action: review
     agent: GovAgent
+    # Use subagent for independent verification
+    useSubagent: true
     description: |
       Verify the fix is complete:
       
