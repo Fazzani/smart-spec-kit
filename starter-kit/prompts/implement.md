@@ -45,11 +45,31 @@ For each task:
 4. **Verify** acceptance criteria are met
 5. **Update** task status in tasks.md
 
-## 5. Status Updates
+## 5. Status Updates (MANDATORY)
 
-After implementing, update the task in `specs/tasks.md`:
-- Change status from "Not Started" to "Done"
-- Add any notes about implementation decisions
+**⚠️ CRITICAL: After EACH task implementation, you MUST update the tasks.md file.**
+
+### How to update:
+
+**Before** (unchecked):
+```markdown
+- [ ] **T001** [P1] 'lib/features/...' **Description**
+```
+
+**After** (checked):
+```markdown
+- [x] **T001** [P1] 'lib/features/...' **Description** ✅ Done (2026-01-31)
+```
+
+### Update process:
+
+1. Open the `tasks.md` file (in `specs/` or feature folder)
+2. Find the task you just completed
+3. Change `- [ ]` to `- [x]`
+4. Add `✅ Done (YYYY-MM-DD)` at the end
+5. Save the file
+
+**DO NOT skip this step. The task is not complete until tasks.md is updated.**
 
 ## 6. Commit Guidelines
 

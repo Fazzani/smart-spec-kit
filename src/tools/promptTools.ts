@@ -616,7 +616,7 @@ ${context}
 Based on the prompt instructions, tasks, specification, and project constitution:
 1. Find the ${taskId ? `task ${taskId}` : "next pending task"}
 2. Implement the code following project conventions
-3. Mark the task as completed in tasks.md
+3. **⚠️ MANDATORY: Update tasks.md** - Change \`- [ ]\` to \`- [x]\` and add \`✅ Done (YYYY-MM-DD)\`
 4. Report what was implemented
 5. **Auto-enrich memory**: After implementation, automatically save learnings to \`.spec-kit/memory/\`:
    - Technical decisions made → \`decisions.md\`
@@ -624,7 +624,9 @@ Based on the prompt instructions, tasks, specification, and project constitution
    - Lessons learned → \`learnings.md\`
    
    Format each entry with date, context, and rationale.
-6. Ask if user wants to continue with next task`,
+6. Ask if user wants to continue with next task
+
+**IMPORTANT: Task is NOT complete until tasks.md is updated!**`,
         }],
       };
     }
