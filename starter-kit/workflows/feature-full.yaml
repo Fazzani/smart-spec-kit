@@ -1,22 +1,31 @@
 # Feature Full Workflow
-# Complete workflow with validation checkpoints
+# Complete workflow with validation checkpoints and supporting documents
 # Inspired by github/spec-kit methodology
 
 name: feature-full
 displayName: "Feature with Validation"
-description: "Complete feature workflow with checklists, analysis, and security/RGPD validations"
+description: "Complete feature workflow with checklists, analysis, security/RGPD validations, and full documentation"
 
 metadata:
-  version: "4.0"
+  version: "5.0"
   author: "Spec-Kit"
   tags:
     - feature
     - governance
     - validation
     - checklist
+    - contracts
 
 template: functional-spec.md
 defaultAgent: SpecAgent
+
+# Supporting documents generated during plan phase
+supportingDocuments:
+  - data-model.md       # Entity definitions, relations, validation
+  - contracts/api.yaml  # OpenAPI spec for REST APIs
+  - contracts/events.md # WebSocket/event contracts (if real-time)
+  - quickstart.md       # Manual validation scenarios
+  - research.md         # Technical research (optional)
 
 steps:
   # ═══════════════════════════════════════════════════════════════
@@ -153,18 +162,34 @@ steps:
     description: |
       Create a detailed implementation plan incorporating validation feedback.
       
-      Include:
+      **Phase -1 Gates (MANDATORY)**:
+      - Simplicity Gate (Article VII): ≤3 projects, no future-proofing
+      - Anti-Abstraction Gate (Article VIII): Use framework directly
+      - Integration-First Gate (Article IX): Contracts before code
+      - Test-First Gate (Article III): Tests derived from spec
+      
+      **Main Plan** (plan.md):
       - Technical approach
       - Components to create/modify
-      - Security measures to implement
-      - RGPD compliance measures
+      - Security measures to implement (from security_report)
+      - RGPD compliance measures (from rgpd_report)
       - Dependencies and order
       - Risk assessment
+      
+      **Supporting Documents** (generate all applicable):
+      - data-model.md: Entity definitions from spec
+      - contracts/api.yaml: OpenAPI 3.0 for all endpoints
+      - contracts/events.md: Real-time events (if applicable)
+      - quickstart.md: Validation scenarios from user stories
+      - research.md: Technical comparisons (if decisions needed)
     inputs:
       spec: "spec_document"
       reviews: ["security_report", "rgpd_report"]
     outputs:
       - plan_document
+      - data_model
+      - api_contracts
+      - quickstart_scenarios
 
   # ═══════════════════════════════════════════════════════════════
   # PHASE 5: TASKS
@@ -175,15 +200,28 @@ steps:
     action: call_agent
     agent: PlanAgent
     description: |
-      Break down the plan into atomic tasks.
+      Break down the plan into atomic tasks using ALL supporting documents.
+      
+      **Input Sources**:
+      - plan.md (required) - Phases, architecture
+      - data-model.md - Entity CRUD tasks, migrations
+      - contracts/api.yaml - Endpoint implementation tasks
+      - contracts/events.md - Event handler tasks (if exists)
+      - quickstart.md - Validation test tasks
+      - security_report - Security implementation tasks
+      - rgpd_report - RGPD compliance tasks
+      
+      **Task Format**: `- [ ] T### [P] [US#] Description with file path`
       
       Each task should:
       - Be completable in 1-2 hours
       - Have clear acceptance criteria
-      - Include security/RGPD considerations
+      - Include security/RGPD considerations where relevant
       - Be independently testable
     inputs:
       source: "plan_document"
+      supportingDocs: ["data_model", "api_contracts", "quickstart_scenarios"]
+      validationReports: ["security_report", "rgpd_report"]
     outputs:
       - tasks_document
 

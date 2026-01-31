@@ -1,0 +1,198 @@
+# Bugfix with Git Branch Workflow
+# Creates a Git branch before starting bug analysis
+# Workflow: branch → analyze → plan → fix → verify
+
+name: bugfix-git
+displayName: "Bugfix with Git Branch"
+description: "Bugfix workflow with automatic Git branch creation: branch → analyze → plan → fix → verify"
+
+metadata:
+  version: "1.0"
+  author: "Spec-Kit"
+  tags:
+    - bugfix
+    - hotfix
+    - git
+    - branch
+
+template: bugfix-report.md
+defaultAgent: SpecAgent
+
+options:
+  branchPrefix:
+    description: "Prefix for branch names (e.g., 'bugfix/', 'fix/', 'hotfix/')"
+    default: "bugfix/"
+  autoNumbering:
+    description: "Auto-number branches (001, 002, etc.)"
+    default: true
+
+steps:
+  # Step 0: Create Git Branch
+  - id: create-branch
+    name: "0. Create Git Branch"
+    action: run_command
+    description: |
+      Create and checkout a new Git branch for this bugfix.
+      
+      Branch naming convention:
+      - Extract short name from bug description (2-4 words)
+      - Apply prefix: {{ options.branchPrefix }}
+      - Add number if autoNumbering enabled
+      
+      Examples:
+      - bugfix/001-login-timeout
+      - bugfix/002-payment-error
+      - hotfix/003-null-pointer
+      
+      Steps:
+      1. Generate short name from bug description
+      2. Find next available number (scan existing branches)
+      3. Create branch: git checkout -b [prefix][number]-[short-name]
+      4. Confirm branch creation
+    inputs:
+      - name: bug_description
+        description: "Bug description to derive branch name"
+        required: true
+    outputs:
+      - branch_name
+      - bugfix_number
+      - short_name
+    commands:
+      - "git fetch --all --prune"
+      - "git checkout -b {{ options.branchPrefix }}{{ bugfix_number }}-{{ short_name }}"
+
+  # Step 1: Analyze Bug
+  - id: analyze-bug
+    name: "1. Analyze Bug"
+    action: call_agent
+    agent: SpecAgent
+    description: |
+      Analyze the bug based on user description.
+      
+      Save to: specs/bugfix-{{ short_name }}/analysis.md
+      
+      Document:
+      - Symptoms and error messages
+      - Reproduction steps (numbered)
+      - Affected components/files
+      - Root cause hypothesis
+      - Impact assessment (severity, affected users)
+      
+      Include any relevant logs or stack traces.
+    inputs:
+      bug_description: "Description from user"
+      branch_name: "create-branch.branch_name"
+    outputs:
+      - root_cause_analysis
+      - affected_files
+
+  # Step 2: Plan Fix
+  - id: plan-fix
+    name: "2. Plan Correction"
+    action: call_agent
+    agent: PlanAgent
+    description: |
+      Create a correction plan.
+      
+      Save to: specs/bugfix-{{ short_name }}/fix-plan.md
+      
+      Include:
+      - Proposed fix approach (minimal changes)
+      - Files/components to modify
+      - Potential side effects
+      - Rollback strategy
+      - Test cases to verify fix
+      
+      Keep the fix minimal and focused.
+    inputs:
+      source: "root_cause_analysis"
+    outputs:
+      - fix_plan
+    requiresApproval: true
+    approvalMessage: "Review the fix plan before applying changes"
+
+  # Step 3: Implement Fix
+  - id: implement-fix
+    name: "3. Implement Fix"
+    action: call_agent
+    agent: SpecAgent
+    description: |
+      Implement the bug fix.
+      
+      Guidelines:
+      - Make minimal changes only
+      - Follow project conventions (see constitution)
+      - Add/update tests for the fix
+      - Document the fix in code comments
+      
+      After each file change:
+      - Commit with descriptive message: "fix: [description]"
+    inputs:
+      source: "fix_plan"
+    outputs:
+      - implementation
+      - modified_files
+
+  # Step 4: Verify Fix
+  - id: verify-fix
+    name: "4. Verify Fix"
+    action: call_agent
+    agent: TestAgent
+    description: |
+      Verify the bug fix works correctly.
+      
+      Verification steps:
+      1. Run existing tests: npm test / pytest
+      2. Test the specific reproduction steps
+      3. Verify no regression in related features
+      4. Check edge cases mentioned in analysis
+      
+      Report:
+      - ✅ Pass: All tests pass, bug is fixed
+      - ❌ Fail: Describe what's still broken
+    inputs:
+      fix_plan: "fix_plan"
+      implementation: "implementation"
+    outputs:
+      - verification_result
+      - test_report
+
+  # Step 5: Create Fix Summary
+  - id: create-summary
+    name: "5. Create Fix Summary"
+    action: call_agent
+    agent: SpecAgent
+    description: |
+      Create a summary of the fix for PR/commit.
+      
+      Include:
+      - Bug description (1-2 sentences)
+      - Root cause
+      - Fix applied
+      - Files modified
+      - Tests added/updated
+      - Any follow-up actions needed
+    inputs:
+      analysis: "root_cause_analysis"
+      implementation: "implementation"
+      verification: "verification_result"
+    outputs:
+      - fix_summary
+
+# Success message
+onComplete:
+  message: |
+    ✅ Bugfix workflow completed!
+    
+    Branch: {{ branch_name }}
+    Analysis: specs/bugfix-{{ short_name }}/analysis.md
+    Fix Plan: specs/bugfix-{{ short_name }}/fix-plan.md
+    
+    Modified files:
+    {{ modified_files }}
+    
+    Next steps:
+    - Review changes: git diff
+    - Run full test suite
+    - Create PR: git push -u origin {{ branch_name }}
+    - Add PR description from fix_summary

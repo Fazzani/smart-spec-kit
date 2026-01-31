@@ -20,4 +20,5 @@
 - [ ] Améliorer l'intégration Azure DevOps
 - [ ] Tests d'intégration pour les outils MCP
 - [ ] Presets par stack (`--preset=react`, `--preset=dotnet`, etc.)
+- [ ] Améliorer le setup pour la prise en charge des différents IDE (Claude code, Cusrsor, etc.)
 - [ ] Ajouter la commande /spec-kit init qui initialise le starter kit dans un projet existant en guidant l'utilisateur avec des questions afin de personnaliser l'installation (choix des workflows, templates, règles de validation, etc.)

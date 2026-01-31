@@ -30,8 +30,17 @@ Spec-Kit is an MCP (Model Context Protocol) server that provides **customizable 
    - Versioned and maintainable in your project
 
 5. **Templates** (`.spec-kit/templates/`)
-   - Document templates for specs, plans, tasks
-   - Markdown format
+   - Document templates for specs, plans, tasks, and supporting documents
+   - Markdown and YAML formats
+   - **Available templates**:
+     - `functional-spec.md` - Feature specification
+     - `plan-template.md` - Implementation plan with Phase -1 Gates
+     - `tasks-template.md` - Task breakdown
+     - `data-model.md` - Entity definitions, relations, validation
+     - `quickstart.md` - Manual validation scenarios
+     - `research.md` - Technical research and comparisons
+     - `contracts/api-template.yaml` - OpenAPI 3.0 specification
+     - `contracts/events-template.md` - WebSocket/SSE event contracts
 
 6. **Constitution** (`.spec-kit/memory/constitution.md`)
    - Project principles and conventions
@@ -121,7 +130,7 @@ speckit: spec user authentication with OAuth
 
 ### speckit_plan
 
-**Purpose**: Create an implementation plan from a specification.
+**Purpose**: Create a complete implementation plan with supporting documents from a specification.
 
 **Slash Command**: `/speckit.plan`
 
@@ -142,12 +151,40 @@ speckit: plan pour la spec specs/auth-spec.md
 
 1. Finds the most recent specification in `specs/`
 2. Loads prompt from `.spec-kit/prompts/plan.md`
-3. Returns context for generating the plan
-4. Output saved to `specs/plan.md`
+3. **Validates Phase -1 Gates** (mandatory before planning):
+   - Simplicity Gate (Article VII): ≤3 projects, no future-proofing
+   - Anti-Abstraction Gate (Article VIII): Use framework directly
+   - Integration-First Gate (Article IX): Contracts before code
+   - Test-First Gate (Article III): Tests derived from spec
+4. Generates the main plan (`plan.md`)
+5. **Generates supporting documents**:
+   - `data-model.md` - Entity definitions, relations, validation rules
+   - `contracts/api.yaml` - OpenAPI 3.0 specification
+   - `contracts/events.md` - Real-time events (if applicable)
+   - `quickstart.md` - Manual validation scenarios
+   - `research.md` - Technical research (optional)
+
+**Output Structure**:
+
+```
+specs/[branch-name]/
+├── spec.md           # Already exists
+├── plan.md           # Main implementation plan
+├── data-model.md     # Entity definitions
+├── quickstart.md     # Validation scenarios
+├── research.md       # Technical research (optional)
+└── contracts/
+    ├── api.yaml      # OpenAPI 3.0
+    └── events.md     # Real-time events (optional)
+```
+
+**Phase -1 Gates**:
+
+These gates enforce architectural discipline from the Constitution. All gates must pass before proceeding to implementation. Document justified exceptions in the Complexity Tracking section of the plan.
 
 ### speckit_tasks
 
-**Purpose**: Generate a task breakdown from a plan.
+**Purpose**: Generate a dependency-ordered task breakdown from plan and supporting documents.
 
 **Slash Command**: `/speckit.tasks`
 
@@ -164,12 +201,36 @@ speckit: tasks
 speckit: générer les tâches
 ```
 
+**Input Sources**:
+
+| Document | Required | What to Extract |
+|----------|----------|------------------|
+| `plan.md` | ✅ Yes | Phases, architecture, decisions |
+| `data-model.md` | ✅ Yes | Entity CRUD tasks, migrations |
+| `contracts/api.yaml` | ✅ Yes | Endpoint implementation tasks |
+| `contracts/events.md` | If exists | Event handler tasks |
+| `quickstart.md` | ✅ Yes | Validation test tasks |
+| `research.md` | If exists | Setup/integration tasks |
+
+**Task Format**:
+
+```
+- [ ] T### [P] [US#] Description with file path
+```
+
+Where:
+- `T###` = Task number (T001, T002...)
+- `[P]` = Parallel marker (if task can run in parallel)
+- `[US#]` = User Story reference from spec
+
 **Behavior**:
 
-1. Finds the most recent plan in `specs/`
+1. Finds the most recent plan and supporting docs in `specs/`
 2. Loads prompt from `.spec-kit/prompts/tasks.md`
-3. Returns context for generating tasks
-4. Output saved to `specs/tasks.md`
+3. Derives tasks from all input sources
+4. Organizes by phase (Setup → Data Layer → API → Events → Testing → Polish)
+5. Identifies parallel groups and dependencies
+6. Output saved to `specs/tasks.md`
 
 ### speckit_implement
 

@@ -95,7 +95,13 @@ speckit_constitution → speckit_specify → speckit_plan → speckit_tasks → 
 ├── templates/         # Document templates
 │   ├── functional-spec.md
 │   ├── plan-template.md
-│   └── tasks-template.md
+│   ├── tasks-template.md
+│   ├── data-model.md          # NEW: Entity definitions
+│   ├── quickstart.md          # NEW: Validation scenarios
+│   ├── research.md            # NEW: Technical research
+│   └── contracts/             # NEW: API contracts
+│       ├── api-template.yaml  # OpenAPI 3.0
+│       └── events-template.md # WebSocket/SSE events
 ├── rules/             # Validation rules
 │   ├── security-rules.md
 │   └── rgpd-rules.md
@@ -105,8 +111,31 @@ speckit_constitution → speckit_specify → speckit_plan → speckit_tasks → 
     └── feature-quick.yaml  # Quick wins (lightweight)
 
 specs/                 # Generated specifications (output)
+├── [branch-name]/     # Feature folder (e.g., 003-chat-system)
+│   ├── spec.md        # Functional specification
+│   ├── plan.md        # Implementation plan
+│   ├── data-model.md  # Entity definitions
+│   ├── quickstart.md  # Validation scenarios
+│   ├── tasks.md       # Task breakdown
+│   ├── research.md    # Technical research (optional)
+│   └── contracts/     # API contracts
+│       ├── api.yaml   # OpenAPI 3.0
+│       └── events.md  # Real-time events (optional)
 └── validations/       # Validation reports
 ```
+
+## Plan Phase Documents
+
+When running `/speckit.plan`, the following documents are generated:
+
+| Document | Description | Obligatoire |
+|----------|-------------|-------------|
+| `plan.md` | Main implementation plan with Phase -1 Gates | ✅ Yes |
+| `data-model.md` | Entity definitions, relations, validation rules | ✅ Yes |
+| `contracts/api.yaml` | OpenAPI 3.0 specification | ✅ Yes |
+| `contracts/events.md` | WebSocket/SSE event contracts | If real-time |
+| `quickstart.md` | Manual validation scenarios from user stories | ✅ Yes |
+| `research.md` | Technical comparisons and decisions | Optional |
 
 ## Important Conventions
 

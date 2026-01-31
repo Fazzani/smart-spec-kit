@@ -2,6 +2,58 @@
 
 **Branch**: `[###-feature-name]` | **Date**: [DATE] | **Spec**: [link to spec.md]
 
+---
+
+## Phase -1: Pre-Implementation Gates
+
+> **⚠️ STOP**: Do not proceed to implementation until ALL gates pass.
+> These gates enforce architectural discipline from the Constitution.
+
+### Simplicity Gate (Article VII)
+
+| Check | Status | Notes |
+|-------|--------|-------|
+| Using ≤3 projects for initial implementation? | ⬜ | Max 3 projects without documented justification |
+| No future-proofing or speculative features? | ⬜ | Only implement what's specified |
+| No "might need later" abstractions? | ⬜ | YAGNI principle |
+
+### Anti-Abstraction Gate (Article VIII)
+
+| Check | Status | Notes |
+|-------|--------|-------|
+| Using framework features directly? | ⬜ | No unnecessary wrappers |
+| Single model representation per entity? | ⬜ | Avoid duplicate DTOs/models |
+| No custom abstractions over standard libraries? | ⬜ | Trust the framework |
+
+### Integration-First Gate (Article IX)
+
+| Check | Status | Notes |
+|-------|--------|-------|
+| API contracts defined before implementation? | ⬜ | See `contracts/` folder |
+| Contract tests written? | ⬜ | Tests verify contract compliance |
+| Using real dependencies (not mocks) where possible? | ⬜ | Prefer real DB, services |
+
+### Test-First Gate (Article III)
+
+| Check | Status | Notes |
+|-------|--------|-------|
+| Acceptance tests derived from spec? | ⬜ | Map to user stories |
+| Test scenarios defined before code? | ⬜ | Red-Green-Refactor |
+| Quickstart validation scenarios ready? | ⬜ | See `quickstart.md` |
+
+### Gate Summary
+
+| Gate | Status | Blocker? |
+|------|--------|----------|
+| Simplicity (VII) | ⬜ PENDING | Yes |
+| Anti-Abstraction (VIII) | ⬜ PENDING | Yes |
+| Integration-First (IX) | ⬜ PENDING | Yes |
+| Test-First (III) | ⬜ PENDING | Yes |
+
+**All gates must pass before proceeding. Document any justified exceptions in Complexity Tracking section.**
+
+---
+
 ## Summary
 
 [TO FILL: Brief description of the implementation approach]
@@ -129,3 +181,24 @@ tests/
 ## Notes
 
 [TO FILL: Additional implementation notes, gotchas, or considerations]
+
+---
+
+## Complexity Tracking
+
+> Document any justified deviations from Constitution articles here.
+
+| Gate Deviation | Article | Justification | Approved By |
+|----------------|---------|---------------|-------------|
+| [Example: Using 4 projects] | VII | [Explain why ≤3 was impossible] | [Reviewer] |
+
+---
+
+## Supporting Documents Checklist
+
+| Document | Required | Status | Location |
+|----------|----------|--------|----------|
+| `data-model.md` | ✅ Yes | ⬜ | `specs/[branch]/data-model.md` |
+| `contracts/` | ✅ Yes | ⬜ | `specs/[branch]/contracts/` |
+| `quickstart.md` | ✅ Yes | ⬜ | `specs/[branch]/quickstart.md` |
+| `research.md` | Optional | ⬜ | `specs/[branch]/research.md` |

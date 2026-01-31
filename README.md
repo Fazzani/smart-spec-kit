@@ -29,12 +29,43 @@ Plateforme d'orchestration automatisée pour le **développement piloté par les
 - **🤖 Commandes Naturelles**: Utilisez `speckit: spec`, `speckit: plan`, etc. directement dans Copilot Chat
 - **📝 Prompts Versionnés**: Prompts personnalisables et versionnables dans `.spec-kit/prompts/`
 - **🔄 Workflows YAML**: Processus personnalisables étape par étape
-- **📋 Templates**: Spécifications fonctionnelles, plans d'implémentation, rapports de bugs
-- **🛡️ Gouvernance Intégrée**: Constitution projet, principes de développement
-- **� Checklists de Qualité**: "Unit tests for English" pour valider vos requirements
+- **📋 Templates Complets**: Specs, plans, data-model, API contracts (OpenAPI), quickstart, research
+- **🛡️ Gouvernance Intégrée**: Constitution projet, Phase -1 Gates, principes de développement
+- **✅ Checklists de Qualité**: "Unit tests for English" pour valider vos requirements
 - **🔍 Analyse de Traçabilité**: Vérification de cohérence entre specs, plans et tâches
-- **�🔗 Azure DevOps**: Intégration native via MCP
+- **🔗 Azure DevOps**: Intégration native via MCP
 - **❓ Aide Contextuelle**: Demandez de l'aide sur Spec-Kit directement dans Copilot
+
+---
+
+## 🏆 Pourquoi Smart Spec-Kit vs GitHub Spec-Kit ?
+
+| Aspect | GitHub Spec-Kit | **Smart Spec-Kit** |
+|--------|-----------------|--------------------|
+| **Installation** | Copier manuellement les fichiers | `npx smart-spec-kit-mcp setup` ✨ |
+| **Distribution** | Dossier à cloner | Package npm installable |
+| **Mise à jour** | Copier à nouveau | `npx smart-spec-kit-mcp@latest setup` |
+| **Personnalisation** | Éditer les fichiers sources | Override dans `.spec-kit/` (non-destructif) |
+| **Workflows** | Manuel (copier les commandes) | **Automatisé** avec YAML + approval gates |
+| **Agents** | Prompts fixes | **Agents personnalisables** (`.spec-kit/agents/`) |
+| **Validation** | Manuelle | **Automatique** (sécurité, RGPD, schéma) |
+| **Phase -1 Gates** | Dans les templates | **Intégré dans le workflow** |
+| **Supporting Docs** | Templates séparés | **Génération automatique** (data-model, contracts, quickstart) |
+| **Mémoire Projet** | Non inclus | **Auto-enrichissement** des décisions/learnings |
+| **Multi-langue** | Anglais | **Français + Anglais** |
+| **MCP Server** | ❌ Non | ✅ **Oui** - communication native avec Copilot |
+
+### 🎯 Smart Spec-Kit = GitHub Spec-Kit + Automatisation + MCP
+
+Smart Spec-Kit implémente **100% de la méthodologie GitHub Spec-Kit** (spec-driven.md) avec :
+
+1. **📦 Distribution packagée** - Un seul `npx` pour tout installer
+2. **🔄 Workflows automatisés** - Enchaînement des étapes sans intervention
+3. **📝 Documents de support auto-générés** - `data-model.md`, `contracts/`, `quickstart.md`
+4. **🚦 Phase -1 Gates intégrées** - Validation architecturale avant implémentation
+5. **🧠 Mémoire projet** - Enrichissement automatique des décisions et conventions
+6. **🔌 Serveur MCP natif** - Communication directe avec GitHub Copilot
+7. **🎨 Personnalisation non-destructive** - Vos overrides dans `.spec-kit/` survivent aux mises à jour
 
 ---
 
@@ -95,11 +126,17 @@ smart-spec-kit-mcp/
 │   │   ├── analyze.md            # Analyse de traçabilité
 │   │   └── checklist.md          # Checklist de qualité des requirements
 │   ├── templates/                # Templates de documents
-│   │   ├── functional-spec.md
+│   │   ├── functional-spec.md    # Spécification fonctionnelle
+│   │   ├── plan-template.md      # Plan avec Phase -1 Gates
+│   │   ├── tasks-template.md     # Liste de tâches
+│   │   ├── data-model.md         # 🆕 Entités et relations
+│   │   ├── quickstart.md         # 🆕 Scénarios de validation
+│   │   ├── research.md           # 🆕 Recherche technique
+│   │   ├── checklist-template.md
 │   │   ├── bugfix-report.md
-│   │   ├── plan-template.md
-│   │   ├── tasks-template.md
-│   │   └── checklist-template.md # Template de checklist de qualité
+│   │   └── contracts/            # 🆕 Contrats API
+│   │       ├── api-template.yaml # OpenAPI 3.0
+│   │       └── events-template.md # WebSocket/SSE
 │   ├── workflows/                # Workflows YAML prédéfinis
 │   │   ├── feature-quick.yaml    # 2-step (spécification rapide)
 │   │   ├── feature-standard.yaml # 5-step (spec → plan → tasks → analyze → implement)
@@ -131,12 +168,23 @@ votre-projet/
 ├── .spec-kit/                    # Configuration locale (personnalisations)
 │   ├── prompts/                  # Override les prompts par défaut
 │   ├── templates/                # Override les templates par défaut
+│   │   └── contracts/            # 🆕 Contrats API personnalisés
 │   ├── workflows/                # Vos workflows personnalisés
-│   ├── agents/                   # Vos agents personnalisés ← NOUVEAU
+│   ├── agents/                   # Vos agents personnalisés
 │   ├── rules/                    # Vos règles de validation
 │   └── memory/
 │       └── constitution.md       # Principes de votre projet
 └── specs/                        # Spécifications générées
+    ├── [feature-name]/           # 🆕 Dossier par feature
+    │   ├── spec.md               # Spécification fonctionnelle
+    │   ├── plan.md               # Plan d'implémentation
+    │   ├── data-model.md         # 🆕 Entités et relations
+    │   ├── quickstart.md         # 🆕 Scénarios validation
+    │   ├── tasks.md              # Liste des tâches
+    │   ├── research.md           # 🆕 Recherche technique (optionnel)
+    │   └── contracts/            # 🆕 Contrats API
+    │       ├── api.yaml          # OpenAPI 3.0
+    │       └── events.md         # Événements temps réel (optionnel)
     └── validations/              # Rapports de validation
 ```
 

@@ -1,0 +1,198 @@
+# Feature with Git Branch Workflow
+# Creates a Git branch before starting specification work
+# Workflow: branch → spec → plan → tasks → analyze → implement
+
+name: feature-git
+displayName: "Feature with Git Branch"
+description: "Feature workflow with automatic Git branch creation: branch → spec → plan → tasks → analyze → implement"
+
+metadata:
+  version: "1.0"
+  author: "Spec-Kit"
+  tags:
+    - feature
+    - git
+    - branch
+    - specification
+
+template: functional-spec.md
+defaultAgent: SpecAgent
+
+options:
+  branchPrefix:
+    description: "Prefix for branch names (e.g., 'feature/', 'feat/')"
+    default: "feature/"
+  autoNumbering:
+    description: "Auto-number branches (001, 002, etc.)"
+    default: true
+
+steps:
+  # Step 0: Create Git Branch
+  - id: create-branch
+    name: "0. Create Git Branch"
+    action: run_command
+    description: |
+      Create and checkout a new Git branch for this feature.
+      
+      Branch naming convention:
+      - Extract short name from feature description (2-4 words)
+      - Apply prefix: {{ options.branchPrefix }}
+      - Add number if autoNumbering enabled
+      
+      Examples:
+      - feature/001-user-auth
+      - feature/002-analytics-dashboard
+      - feature/003-payment-integration
+      
+      Steps:
+      1. Generate short name from requirements
+      2. Find next available number (scan existing branches)
+      3. Create branch: git checkout -b [prefix][number]-[short-name]
+      4. Confirm branch creation
+    inputs:
+      - name: requirements
+        description: "Feature description to derive branch name"
+        required: true
+    outputs:
+      - branch_name
+      - feature_number
+      - short_name
+    commands:
+      - "git fetch --all --prune"
+      - "git checkout -b {{ options.branchPrefix }}{{ feature_number }}-{{ short_name }}"
+
+  # Step 1: Create Specification
+  - id: create-spec
+    name: "1. Create Specification"
+    action: call_agent
+    agent: SpecAgent
+    description: |
+      Create a functional specification based on user requirements.
+      
+      Save to: specs/{{ short_name }}/spec.md
+      
+      Include:
+      - Feature summary and objectives
+      - User stories with acceptance criteria
+      - Functional requirements (with IDs: FR-001, FR-002...)
+      - Non-functional requirements (if applicable)
+      - Dependencies and constraints
+      
+      Quality checks:
+      - No implementation details (tech stack, APIs)
+      - Focused on user value and business needs
+      - Maximum 3 [NEEDS CLARIFICATION] markers
+      
+      Mark unclear sections with [NEEDS CLARIFICATION] for review.
+    inputs:
+      - name: requirements
+        description: "Feature description from user"
+        required: true
+      - name: branch_name
+        source: "create-branch.branch_name"
+    outputs:
+      - spec_document
+      - spec_path
+
+  # Step 2: Create Implementation Plan
+  - id: create-plan
+    name: "2. Create Implementation Plan"
+    action: call_agent
+    agent: PlanAgent
+    description: |
+      Create a detailed implementation plan based on the specification.
+      
+      Save to: specs/{{ short_name }}/plan.md
+      
+      Include:
+      - Technical approach and architecture
+      - Components to create/modify
+      - Dependencies and order
+      - Risk assessment
+      - Estimated effort per phase
+    inputs:
+      source: "spec_document"
+    outputs:
+      - plan_document
+
+  # Step 3: Generate Task Breakdown
+  - id: generate-tasks
+    name: "3. Generate Tasks"
+    action: call_agent
+    agent: PlanAgent
+    description: |
+      Break down the plan into atomic, actionable tasks.
+      
+      Save to: specs/{{ short_name }}/tasks.md
+      
+      Task format: - [ ] T### [P] [US#] Description with file path
+      
+      Each task should:
+      - Have unique ID (T001, T002...)
+      - Be completable in 1-2 hours
+      - Have clear file paths
+      - Include [P] marker if parallelizable
+      - Include [US#] for user story phase tasks
+    inputs:
+      source: "plan_document"
+    outputs:
+      - tasks_document
+
+  # Step 4: Analyze Artifacts
+  - id: analyze
+    name: "4. Analyze Artifacts"
+    action: call_agent
+    agent: SpecAgent
+    description: |
+      Perform cross-artifact consistency check:
+      
+      - Duplication detection
+      - Ambiguity detection
+      - Coverage gaps (requirements ↔ tasks)
+      - Constitution alignment
+      
+      Report any CRITICAL issues that must be resolved before implementation.
+    inputs:
+      spec: "spec_document"
+      plan: "plan_document"
+      tasks: "tasks_document"
+    outputs:
+      - analysis_report
+
+  # Step 5: Implement
+  - id: implement
+    name: "5. Implement Tasks"
+    action: call_agent
+    agent: SpecAgent
+    description: |
+      Execute tasks from tasks.md phase by phase.
+      
+      Before starting:
+      - Check all checklists pass (if any exist)
+      - Verify no CRITICAL analysis issues
+      
+      During implementation:
+      - Mark completed tasks with [x]
+      - Commit regularly with meaningful messages
+      - Follow project conventions from constitution
+    inputs:
+      source: "tasks_document"
+    outputs:
+      - implementation_complete
+    requiresApproval: true
+    approvalMessage: "Review analysis before starting implementation"
+
+# Success message
+onComplete:
+  message: |
+    ✅ Feature workflow completed!
+    
+    Branch: {{ branch_name }}
+    Spec: specs/{{ short_name }}/spec.md
+    Plan: specs/{{ short_name }}/plan.md
+    Tasks: specs/{{ short_name }}/tasks.md
+    
+    Next steps:
+    - Run tests: npm test / pytest
+    - Review changes: git diff
+    - Create PR: git push -u origin {{ branch_name }}

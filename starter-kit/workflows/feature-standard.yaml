@@ -1,13 +1,13 @@
 # Feature Standard Workflow
-# Standard workflow: spec → plan → tasks → analyze → implement
+# Standard workflow: spec → plan (+ data-model, contracts, quickstart) → tasks → analyze → implement
 # Inspired by github/spec-kit methodology
 
 name: feature-standard
 displayName: "Standard Feature"
-description: "Standard feature workflow: specification → plan → tasks → analysis → implementation"
+description: "Standard feature workflow: specification → plan (with supporting docs) → tasks → analysis → implementation"
 
 metadata:
-  version: "4.0"
+  version: "5.0"
   author: "Spec-Kit"
   tags:
     - feature
@@ -16,6 +16,14 @@ metadata:
 
 template: functional-spec.md
 defaultAgent: SpecAgent
+
+# Supporting documents generated during plan phase
+supportingDocuments:
+  - data-model.md       # Entity definitions, relations, validation
+  - contracts/api.yaml  # OpenAPI spec for REST APIs
+  - contracts/events.md # WebSocket/event contracts (if real-time)
+  - quickstart.md       # Manual validation scenarios
+  - research.md         # Technical research (optional)
 
 steps:
   # Step 1: Create Specification
@@ -46,7 +54,7 @@ steps:
     outputs:
       - spec_document
 
-  # Step 2: Create Implementation Plan
+  # Step 2: Create Implementation Plan + Supporting Documents
   - id: create-plan
     name: "2. Create Implementation Plan"
     action: call_agent
@@ -54,16 +62,33 @@ steps:
     description: |
       Create a detailed implementation plan based on the specification.
       
-      Include:
+      **Phase -1 Gates (MANDATORY)**:
+      Before proceeding, validate:
+      - Simplicity Gate (Article VII): ≤3 projects, no future-proofing
+      - Anti-Abstraction Gate (Article VIII): Use framework directly
+      - Integration-First Gate (Article IX): Contracts before code
+      - Test-First Gate (Article III): Tests derived from spec
+      
+      **Main Plan** (plan.md):
       - Technical approach and architecture
       - Components to create/modify
       - Dependencies and order
       - Risk assessment
       - Estimated effort per phase
+      
+      **Supporting Documents** (generate all applicable):
+      - data-model.md: Entity definitions, relations, validation rules
+      - contracts/api.yaml: OpenAPI 3.0 spec for REST endpoints
+      - contracts/events.md: Real-time events (if WebSocket/SSE)
+      - quickstart.md: Manual validation scenarios from user stories
+      - research.md: Technical comparisons (if decisions needed)
     inputs:
       source: "spec_document"
     outputs:
       - plan_document
+      - data_model
+      - api_contracts
+      - quickstart_scenarios
 
   # Step 3: Generate Task Breakdown
   - id: generate-tasks
@@ -73,12 +98,20 @@ steps:
     description: |
       Break down the plan into atomic, actionable tasks.
       
+      **Input Sources**:
+      - plan.md (required)
+      - data-model.md (derive entity tasks)
+      - contracts/api.yaml (derive endpoint tasks)
+      - quickstart.md (derive test tasks)
+      
       Each task should:
       - Be completable in 1-2 hours
       - Have clear acceptance criteria
       - Be independent when possible
       - Include file paths if known
       - Map to specific requirements (FR-001, etc.)
+      
+      **Task Format**: `- [ ] T### [P] [US#] Description with file path`
     inputs:
       source: "plan_document"
     outputs:
