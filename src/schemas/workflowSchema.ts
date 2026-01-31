@@ -37,10 +37,11 @@ const FlexibleInputsSchema = z.union([
 export const WorkflowStepSchema = z.object({
   id: z.string().describe("Unique identifier for the step"),
   name: z.string().describe("Human-readable step name"),
-  action: z.enum(["fetch_ado", "generate_content", "review", "create_file", "call_agent"])
+  action: z.enum(["fetch_ado", "generate_content", "review", "create_file", "call_agent", "call_tool"])
     .describe("The type of action to perform"),
   description: z.string().describe("Detailed description of what this step does"),
   agent: z.string().optional().describe("Agent to use for this step (e.g., SpecAgent, PlanAgent)"),
+  tool: z.string().optional().describe("MCP tool to call when action is 'call_tool'"),
   inputs: FlexibleInputsSchema.describe("Input parameters for the step"),
   outputs: z.array(z.string()).optional().describe("Expected outputs from this step"),
   next: z.string().optional().describe("Next step ID (if not sequential)"),
