@@ -481,21 +481,69 @@ Each agent brings specialized guidelines to shape Copilot's response appropriate
 
 **Customizing Agents**:
 
-Edit system prompts in `src/prompts/agents.ts`:
+Agents are now **fully customizable** from `.spec-kit/agents/`. You can:
 
-```typescript
-export const SpecAgent: AgentDefinition = {
-  name: "SpecAgent",
-  displayName: "Specification Agent",
-  description: "...",
-  systemPrompt: `You are SpecAgent, an expert technical writer...
-    // Your custom guidelines here
-  `,
-  capabilities: [...]
-};
+1. **Override built-in agents**: Create a file with the same name (e.g., `SpecAgent.md`)
+2. **Create new agents**: Create a new file (e.g., `SecurityAgent.md`)
+
+**Agent File Format** (Markdown with YAML frontmatter):
+
+```markdown
+---
+name: MyCustomAgent
+displayName: "My Custom Agent"
+description: "Expert in your specific domain"
+capabilities:
+  - Your first capability
+  - Your second capability
+---
+
+## System Prompt
+
+You are MyCustomAgent, an expert in [your domain]...
+
+### Guidelines
+- Guideline 1
+- Guideline 2
 ```
 
-Changes take effect on the next workflow execution. No registration needed - agents are internal to Spec-Kit.
+**Example: Creating a SecurityAgent**:
+
+```markdown
+---
+name: SecurityAgent
+displayName: "Security Review Agent"
+description: "Expert in application security and vulnerability assessment"
+capabilities:
+  - Identify security vulnerabilities
+  - Recommend secure coding practices
+  - Review authentication and authorization
+  - Check for OWASP Top 10 issues
+---
+
+## System Prompt
+
+You are SecurityAgent, an expert in application security...
+
+### Your Role
+Review code and specifications for security vulnerabilities...
+```
+
+Then use in your workflow:
+
+```yaml
+steps:
+  - id: security-review
+    agent: SecurityAgent  # Your custom agent!
+    action: call_agent
+    description: "Review code for security issues"
+```
+
+**Resolution Order**:
+1. `.spec-kit/agents/AgentName.md` (local override - takes priority)
+2. Built-in agents from package (fallback)
+
+Changes take effect immediately - no restart needed.
 
 ### Workflow Validation Schema
 

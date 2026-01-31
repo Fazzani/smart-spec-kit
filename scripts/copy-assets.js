@@ -19,6 +19,7 @@ const assets = [
   'starter-kit/memory',
   'starter-kit/rules',
   'starter-kit/workflows',
+  'starter-kit/agents',           // Customizable agent definitions
   'starter-kit/github-prompts',  // Slash commands for GitHub Copilot
 ];
 

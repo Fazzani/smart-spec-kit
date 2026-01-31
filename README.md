@@ -100,6 +100,12 @@ smart-spec-kit-mcp/
 │   │   ├── feature-full.yaml     # 5-step (détaillé)
 │   │   ├── bugfix-quick.yaml     # 2-step (bugfix rapide)
 │   │   └── bugfix.yaml
+│   ├── agents/                   # Agents IA customisables
+│   │   ├── SpecAgent.md          # Rédacteur de spécifications
+│   │   ├── PlanAgent.md          # Planificateur technique
+│   │   ├── GovAgent.md           # Validateur gouvernance
+│   │   ├── TestAgent.md          # Stratège de tests
+│   │   └── _CustomAgent.template.md  # Template pour créer vos agents
 │   ├── rules/                    # Règles de validation
 │   │   ├── security-rules.md     # Règles OWASP
 │   │   └── rgpd-rules.md         # Conformité GDPR
@@ -120,6 +126,7 @@ votre-projet/
 │   ├── prompts/                  # Override les prompts par défaut
 │   ├── templates/                # Override les templates par défaut
 │   ├── workflows/                # Vos workflows personnalisés
+│   ├── agents/                   # Vos agents personnalisés ← NOUVEAU
 │   ├── rules/                    # Vos règles de validation
 │   └── memory/
 │       └── constitution.md       # Principes de votre projet
@@ -127,7 +134,7 @@ votre-projet/
     └── validations/              # Rapports de validation
 ```
 
-**Note**: Les workflows et templates par défaut viennent de `starter-kit/` du package. 
+**Note**: Les workflows, templates et agents par défaut viennent de `starter-kit/` du package. 
 Vous pouvez personnaliser en créant des fichiers dans `.spec-kit/`.
 
 ---
@@ -269,14 +276,44 @@ steps:
 
 Ce sont des **system prompts prédéfinis** qui guident le comportement de Copilot :
 
-| Agent | Rôle |
-|-------|------|
-| **SpecAgent** | Rédacteur de spécifications |
-| **PlanAgent** | Planificateur technique |
-| **GovAgent** | Validateur de gouvernance |
-| **TestAgent** | Stratège de tests |
+| Agent | Rôle | Fichier |
+|-------|------|---------|
+| **SpecAgent** | Rédacteur de spécifications | `SpecAgent.md` |
+| **PlanAgent** | Planificateur technique | `PlanAgent.md` |
+| **GovAgent** | Validateur de gouvernance | `GovAgent.md` |
+| **TestAgent** | Stratège de tests | `TestAgent.md` |
 
-Quand vous mettez `agent: SpecAgent` dans une étape, Spec-Kit envoie le system prompt de SpecAgent à Copilot pour orienter sa réponse.
+Quand vous mettez `agent: SpecAgent` dans une étape, Spec-Kit envoie le system prompt de SpecAgent à Copilot.
+
+#### Créer un Agent Personnalisé
+
+Les agents sont maintenant **entièrement customisables** depuis `.spec-kit/agents/` :
+
+```markdown
+# .spec-kit/agents/SecurityAgent.md
+
+---
+name: SecurityAgent
+displayName: "Security Review Agent"
+description: "Expert en sécurité applicative"
+capabilities:
+  - Identifier les vulnérabilités
+  - Recommander les bonnes pratiques
+---
+
+## System Prompt
+
+Tu es SecurityAgent, un expert en sécurité applicative...
+```
+
+Puis utilisez dans vos workflows :
+
+```yaml
+steps:
+  - id: security-review
+    agent: SecurityAgent  # Votre agent custom !
+    action: call_agent
+```
 
 Pour plus de détails : [Understanding Spec-Kit Agents](docs/DOCUMENTATION.md#understanding-spec-kit-agents)
 

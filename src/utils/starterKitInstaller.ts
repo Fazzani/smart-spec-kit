@@ -17,6 +17,7 @@ const PROMPTS_DIR = "prompts";
 const TEMPLATES_DIR = "templates";
 const MEMORY_DIR = "memory";
 const RULES_DIR = "rules";
+const AGENTS_DIR = "agents";
 const SPECS_DIR = "specs";
 
 /**
@@ -239,7 +240,27 @@ export async function installStarterKit(
     }
   }
 
-  // 5. Create specs/ directory
+  // 5. Install agents to .spec-kit/agents/
+  const agentsSrc = path.join(starterKitPath, "agents");
+  const agentsDest = path.join(projectPath, SPEC_KIT_DIR, AGENTS_DIR);
+
+  if (await exists(agentsSrc)) {
+    const agentsExist = await exists(agentsDest);
+    
+    if (agentsExist && !options.force) {
+      result.skipped.push(`${SPEC_KIT_DIR}/${AGENTS_DIR}`);
+    } else {
+      try {
+        await copyDir(agentsSrc, agentsDest);
+        result.created.push(`${SPEC_KIT_DIR}/${AGENTS_DIR}`);
+      } catch (error) {
+        result.errors.push(`Failed to copy agents: ${error}`);
+        result.success = false;
+      }
+    }
+  }
+
+  // 6. Create specs/ directory
   const specsDir = path.join(projectPath, SPECS_DIR);
   if (!(await exists(specsDir))) {
     try {
@@ -350,6 +371,12 @@ export function formatInstallReport(result: InstallResult, projectPath: string):
   report += "│   ├── rules/               # Validation rules (security, RGPD)\n";
   report += "│   │   ├── security-rules.md\n";
   report += "│   │   └── rgpd-rules.md\n";
+  report += "│   ├── agents/              # Customizable AI agents\n";
+  report += "│   │   ├── SpecAgent.md\n";
+  report += "│   │   ├── PlanAgent.md\n";
+  report += "│   │   ├── GovAgent.md\n";
+  report += "│   │   ├── TestAgent.md\n";
+  report += "│   │   └── _CustomAgent.template.md\n";
   report += "│   └── memory/              # Project context\n";
   report += "│       └── constitution.md  # Project principles\n";
   report += "├── specs/                   # Generated specifications\n";
