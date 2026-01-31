@@ -369,25 +369,36 @@ Then use: `speckit: validate my-custom`
 **Examples**:
 
 ```text
-speckit: workflow list
-speckit: workflow start feature-standard
-speckit: workflow start bugfix MyBug auto
-speckit: workflow status
+/speckit.workflow feature-standard Multi-View
+/speckit.workflow feature-quick
+/speckit.workflow bugfix
 /speckit.workflow list
+/speckit.workflow status
 ```
+
+**Simplified Usage**:
+
+Just type the workflow name after `/speckit.workflow`:
+
+- `/speckit.workflow feature-standard` → Starts the standard workflow
+- `/speckit.workflow bugfix` → Starts the bugfix workflow
+- Any text after the workflow name becomes the `contextId`
 
 **Behavior**:
 
 **Action: list**
+
 1. Scans `.spec-kit/workflows/` (local) and `starter-kit/workflows/` (built-in)
 2. Displays table with workflow name, description, and source (🔧 Local / 📦 Built-in)
 
 **Action: start**
+
 1. Validates workflow exists
-2. Provides instructions to call `start_workflow` MCP tool
+2. Calls `start_workflow` MCP tool to begin the workflow
 3. Workflow will guide through each step automatically
 
 **Action: status**
+
 1. Checks active workflow session
 2. Shows current step, completed actions, next required action
 
@@ -395,9 +406,9 @@ speckit: workflow status
 
 | Workflow | Description | Steps |
 |----------|-------------|-------|
-| `feature-quick` | Quick feature implementation | specify → implement (lightweight) |
-| `feature-standard` | Standard feature workflow | specify → plan → tasks → implement |
-| `feature-full` | Full feature with validation | specify → plan → tasks → implement → validate |
+| `feature-quick` | Quick feature implementation | spec → implement |
+| `feature-standard` | Standard feature workflow | spec → plan → tasks → implement |
+| `feature-full` | Full feature with validation | spec → security review → RGPD review → plan → tasks → implement |
 | `bugfix` | Bug fix with reproduction | reproduce → analyze → fix → test |
 
 **Creating Custom Workflows**:

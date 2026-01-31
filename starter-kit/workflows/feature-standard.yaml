@@ -1,92 +1,96 @@
 # Feature Standard Workflow
-# Used for creating functional specifications from Azure DevOps Feature work items
+# Standard workflow: spec → plan → tasks → implement
 
 name: feature-standard
-displayName: "Feature Specification"
-description: "Creates a complete functional specification document from an Azure DevOps Feature work item"
+displayName: "Standard Feature"
+description: "Standard feature workflow: specification → plan → tasks → implementation"
 
 metadata:
-  version: "1.0"
+  version: "2.0"
   author: "Spec-Kit"
   tags:
     - feature
     - specification
-    - functional
+    - standard
 
 template: functional-spec.md
 defaultAgent: SpecAgent
 
 steps:
-  - id: fetch-workitem
-    name: "Fetch Azure DevOps Work Item"
-    action: fetch_ado
-    description: |
-      Retrieve the Feature work item from Azure DevOps.
-      Extract: Title, Description, Acceptance Criteria, Tags, Links, and Parent/Child relationships.
-    outputs:
-      - workitem_data
-      - linked_items
-
-  - id: analyze-requirements
-    name: "Analyze Requirements"
+  # Step 1: Create Specification
+  - id: create-spec
+    name: "1. Create Specification"
     action: call_agent
     agent: SpecAgent
     description: |
-      Analyze the work item data to identify:
-      - Core functional requirements
-      - Non-functional requirements (performance, security, etc.)
-      - User personas and use cases
-      - Dependencies and constraints
-      - Risks and assumptions
-    inputs:
-      source: "workitem_data"
-    outputs:
-      - requirements_analysis
-
-  - id: generate-spec
-    name: "Generate Specification Document"
-    action: generate_content
-    agent: SpecAgent
-    description: |
-      Using the template and analyzed requirements, generate the functional specification.
+      Create a functional specification based on user requirements.
       
-      Guidelines:
-      - Fill all sections with available data
-      - Mark unclear sections with [TO FILL] for human review
-      - Include traceability links to Azure DevOps
-      - Follow the template structure strictly
+      Include:
+      - Feature summary and objectives
+      - User stories with acceptance criteria
+      - Functional requirements
+      - Non-functional requirements (if applicable)
+      - Dependencies and constraints
+      
+      Mark unclear sections with [NEEDS CLARIFICATION] for review.
     inputs:
-      template: "functional-spec.md"
-      data: "requirements_analysis"
+      - name: requirements
+        description: "Feature description from user"
+        required: true
     outputs:
       - spec_document
 
-  - id: review-spec
-    name: "Review & Validate"
-    action: review
-    agent: GovAgent
+  # Step 2: Create Implementation Plan
+  - id: create-plan
+    name: "2. Create Implementation Plan"
+    action: call_agent
+    agent: PlanAgent
     description: |
-      Review the generated specification for:
-      - Completeness (all required sections filled)
-      - Consistency (no contradictions)
-      - Clarity (understandable by all stakeholders)
-      - Traceability (links to source requirements)
+      Create a detailed implementation plan based on the specification.
       
-      Suggest improvements if needed.
+      Include:
+      - Technical approach
+      - Components to create/modify
+      - Dependencies and order
+      - Risk assessment
+      - Estimated effort
     inputs:
-      document: "spec_document"
+      source: "spec_document"
     outputs:
-      - review_feedback
-      - validated_spec
+      - plan_document
 
-  - id: create-file
-    name: "Save Specification"
-    action: create_file
+  # Step 3: Generate Task Breakdown
+  - id: generate-tasks
+    name: "3. Generate Tasks"
+    action: call_agent
+    agent: PlanAgent
     description: |
-      Save the validated specification as a Markdown file.
-      Suggested location: `specs/{workitem_id}-functional-spec.md`
+      Break down the plan into atomic, actionable tasks.
+      
+      Each task should:
+      - Be completable in 1-2 hours
+      - Have clear acceptance criteria
+      - Be independent when possible
+      - Include file paths if known
     inputs:
-      content: "validated_spec"
-      filename_pattern: "{context_id}-functional-spec.md"
+      source: "plan_document"
     outputs:
-      - file_path
+      - tasks_document
+
+  # Step 4: Implement
+  - id: implement
+    name: "4. Implement"
+    action: call_agent
+    agent: SpecAgent
+    description: |
+      Implement the tasks one by one.
+      
+      For each task:
+      - Read the task description
+      - Implement following project conventions
+      - Update task status when complete
+      - Proceed to next task
+    inputs:
+      source: "tasks_document"
+    outputs:
+      - implementation

@@ -15,6 +15,7 @@ Users can type `/speckit.` to see available slash commands:
 | `/speckit.clarify` | `speckit_clarify` | Clarify requirements |
 | `/speckit.validate` | `speckit_validate` | Validate compliance (security, RGPD, etc.) |
 | `/speckit.memory` | `speckit_memory` | Manage project memory |
+| `/speckit.workflow` | `start_workflow` | Start an automated workflow |
 | `/speckit.help` | `speckit_help` | Get help and documentation |
 
 ## Keyword Commands (Alternative)
@@ -30,6 +31,7 @@ When the user mentions **"speckit:"** followed by a command, or uses these keywo
 | `speckit: clarify`, `clarifier`, `préciser` | `speckit_clarify` | Clarify requirements |
 | `speckit: validate`, `valider`, `vérifier` | `speckit_validate` | Validate compliance (security, RGPD, etc.) |
 | `speckit: memory`, `enrichir la mémoire`, `ajouter au contexte` | `speckit_memory` | Manage project memory |
+| `speckit: workflow feature-standard`, `démarrer workflow` | `start_workflow` | Start an automated workflow |
 | `speckit: help`, `aide sur speckit`, questions about spec-kit | `speckit_help` | Get help and documentation |
 
 ## Getting Help
@@ -113,21 +115,28 @@ After calling a spec-kit tool, follow the instructions in the tool response. The
 - Specific instructions for what to generate
 - Suggested next step
 
-## Automated Workflows (Optional)
+## Automated Workflows
 
-For multi-step automation, use `start_workflow`:
+Workflows automate multi-step processes. Use `/speckit.workflow` or `start_workflow`:
 
-| User Says | Action |
-|-----------|--------|
-| `speckit: start_workflow workflow_name="feature-quick"` | Start quick feature workflow (lightweight) |
-| `speckit: start_workflow workflow_name="feature-standard" PiP Support` | Start feature workflow for PiP Support |
-| `speckit: start_workflow workflow_name="bugfix" auto=true` | Start bugfix workflow in AUTO mode |
+| Workflow | Description |
+|----------|-------------|
+| `feature-quick` | Quick win: spec → implement |
+| `feature-standard` | Standard: spec → plan → tasks → implement |
+| `feature-full` | Complete with security/RGPD validations |
+| `bugfix` | Bug fix with reproduction |
 
-**Auto Mode** (`auto=true`): Proceeds through all steps without asking for user approval. Default is `false` (manual approval required).
+### Examples
+
+- `/speckit.workflow feature-standard Multi-View` → Start standard workflow for "Multi-View"
+- `/speckit.workflow feature-quick` → Start quick workflow
+- `/speckit.workflow bugfix` → Start bugfix workflow
+
+**Auto Mode**: Add `auto=true` to proceed without approval prompts.
 
 ## Example Interactions
 
-**User**: `/speckit.specify pour un système de notifications push`
+**User**: `/speckit.specify système de notifications push`
 **Action**: Call `speckit_specify` with `requirements: "système de notifications push"`
 
 **User**: `/speckit.plan`  
@@ -139,25 +148,13 @@ For multi-step automation, use `start_workflow`:
 **User**: `/speckit.memory list`
 **Action**: Call `speckit_memory` with `action: "list"`
 
-**User**: `/speckit.memory ajouter une décision technique`
-**Action**: Call `speckit_memory` with `action: "add"`, `category: "decisions"`
-
-**User**: `/speckit.memory auto`
-**Action**: Call `speckit_memory` with `action: "auto"` to auto-enrich from context
-
 **User**: `/speckit.validate security`
 **Action**: Call `speckit_validate` with `ruleType: "security"`
 
-**User**: `/speckit.validate rgpd phase=spec`
-**Action**: Call `speckit_validate` with `ruleType: "rgpd"`, `phase: "spec"`
+**User**: `/speckit.workflow feature-standard Multi-View`
+**Action**: Call `start_workflow` with `workflow_name: "feature-standard"`, `context_id: "Multi-View"`
 
-**User**: `/speckit.validate architecture-rules`
-**Action**: Call `speckit_validate` with `ruleType: "architecture"` (uses custom rules file)
-
-**User**: `speckit: start_workflow workflow_name="feature-standard" PiP Support auto=true`
-**Action**: Call `start_workflow` with `workflow_name: "feature-standard"`, `context_id: "PiP Support"`, `auto: true`
-
-**User**: `/speckit.help comment créer un nouveau workflow ?`
+**User**: `/speckit.help workflows`
 **Action**: Call `speckit_help` with `topic: "workflows"`
 
 **User**: "Comment fonctionne spec-kit ?"
