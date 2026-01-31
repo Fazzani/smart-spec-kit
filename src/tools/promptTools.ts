@@ -9,6 +9,7 @@ import * as fs from "node:fs/promises";
 import * as path from "node:path";
 import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { listWorkflowsDetailed, loadWorkflow } from "../utils/workflowLoader.js";
 
 // Schema for prompt tool arguments
 const SpecifyArgsSchema = z.object({
@@ -50,6 +51,13 @@ const ValidateArgsSchema = z.object({
   targetPath: z.string().optional().describe("Path to the document or code to validate. Auto-detects if not provided."),
 });
 
+const WorkflowArgsSchema = z.object({
+  action: z.enum(["list", "start", "status"]).optional().describe("Action: 'list' (show workflows), 'start' (start a workflow), 'status' (show current status). Default: 'list'"),
+  workflowName: z.string().optional().describe("Name of the workflow to start (required for 'start' action). Examples: 'feature-standard', 'bugfix'"),
+  contextId: z.string().optional().describe("Optional context identifier for the workflow (e.g., work item ID or feature name)"),
+  auto: z.boolean().optional().describe("Auto mode - proceed through steps without approval (default: false)"),
+});
+
 /**
  * Load documentation from package
  */
@@ -84,7 +92,18 @@ All commands are conversational - parameters are optional. Just type the command
 | \`speckit: implement\` | Implement tasks | \`speckit: implement\` or \`speckit: implement task 3\` |
 | \`speckit: clarify\` | Clarify requirements | \`speckit: clarify\` |
 | \`speckit: memory\` | Manage project memory | \`speckit: memory list\` or \`speckit: memory auto\` |
+| \`speckit: workflow\` | Manage workflows | \`speckit: workflow list\` or \`speckit: workflow start feature-standard\` |
 | \`speckit: help\` | Get help | \`speckit: help workflows\` |
+
+## Workflows
+
+Workflows are multi-step automated processes:
+
+- \`speckit: workflow list\` - Show available workflows
+- \`speckit: workflow start feature-standard\` - Start a workflow
+- \`speckit: workflow status\` - Check current workflow status
+
+Workflows guide you through specify → plan → tasks → implement with built-in checkpoints.
 
 ## Memory Management
 
@@ -126,6 +145,28 @@ Add YAML files to \`.spec-kit/workflows/\` for custom multi-step processes.
 
 ### Update Constitution
 Edit \`.spec-kit/memory/constitution.md\` with your project principles (tech stack, conventions, etc.)
+
+### Customize Agents
+Agents are AI personas that guide specific tasks. Create custom agents in \`.spec-kit/agents/\`:
+
+\`\`\`markdown
+---
+name: SecurityAgent
+displayName: "Security Expert"
+description: "Expert en sécurité applicative"
+capabilities:
+  - Identifier les vulnérabilités
+  - OWASP Top 10
+---
+
+## System Prompt
+
+Tu es SecurityAgent, expert en sécurité...
+\`\`\`
+
+Use in workflows: \`agent: SecurityAgent\`
+
+Built-in agents: SpecAgent, PlanAgent, GovAgent, TestAgent
 
 ## Troubleshooting
 
@@ -1078,6 +1119,137 @@ Perform a thorough validation of the ${phaseDisplay.toLowerCase()} against the $
 ## Recommendations
 {List improvement suggestions}
 \`\`\``,
+        }],
+      };
+    }
+  );
+
+  // speckit_workflow - Manage workflows
+  server.tool(
+    "speckit_workflow",
+    "Manage multi-step workflows. Use this when the user wants to list workflows, start a workflow, or check workflow status. Triggers: 'speckit: workflow', 'démarrer un workflow', 'workflow list'.",
+    WorkflowArgsSchema.shape,
+    async ({ action = "list", workflowName, contextId, auto }) => {
+      const projectPath = process.cwd();
+      
+      // Check setup
+      const setup = await checkSetup(projectPath);
+      if (!setup.ok) {
+        return {
+          content: [{
+            type: "text" as const,
+            text: `## ⚠️ Spec-Kit Setup Required\n\nMissing: ${setup.missing.join(", ")}\n\nRun \`npx smart-spec-kit-mcp setup\` to initialize Spec-Kit in this project.`,
+          }],
+        };
+      }
+
+      // Action: list - Show available workflows
+      if (action === "list") {
+        const workflowsInfo = await listWorkflowsDetailed();
+        
+        let workflowList = "## 📋 Available Workflows\n\n";
+        
+        if (workflowsInfo.length === 0) {
+          workflowList += "No workflows found. Create custom workflows in `.spec-kit/workflows/`.\n\n";
+        } else {
+          workflowList += "| Workflow | Description | Source |\n";
+          workflowList += "|----------|-------------|--------|\n";
+          
+          for (const wfInfo of workflowsInfo) {
+            const source = wfInfo.source === "local" ? "🔧 Local" : "📦 Built-in";
+            
+            // Load workflow to get description
+            let description = "N/A";
+            try {
+              const workflow = await loadWorkflow(wfInfo.name);
+              description = workflow.description || "N/A";
+            } catch {
+              // If loading fails, use N/A
+            }
+            
+            workflowList += `| \`${wfInfo.name}\` | ${description} | ${source} |\n`;
+          }
+        }
+        
+        workflowList += `\n### Usage\n\n`;
+        workflowList += `- **Start a workflow**: \`speckit: workflow start workflow_name="feature-standard"\`\n`;
+        workflowList += `- **Auto mode**: Add \`auto=true\` to run without approval prompts\n`;
+        workflowList += `- **With context**: Add \`contextId="MyFeature"\` for naming\n\n`;
+        workflowList += `### Built-in Workflows\n\n`;
+        workflowList += `- **feature-quick**: Quick feature (lightweight, no tasks breakdown)\n`;
+        workflowList += `- **feature-standard**: Standard feature (spec → plan → tasks → implement)\n`;
+        workflowList += `- **feature-full**: Full feature with validation and testing\n`;
+        workflowList += `- **bugfix**: Bug fix workflow with reproduction\n`;
+        
+        return {
+          content: [{
+            type: "text" as const,
+            text: workflowList,
+          }],
+        };
+      }
+
+      // Action: start - Start a workflow
+      if (action === "start") {
+        if (!workflowName) {
+          return {
+            content: [{
+              type: "text" as const,
+              text: `## ⚠️ Missing Workflow Name\n\nPlease specify which workflow to start.\n\nExample: \`speckit: workflow start workflow_name="feature-standard"\`\n\nRun \`speckit: workflow list\` to see available workflows.`,
+            }],
+          };
+        }
+
+        return {
+          content: [{
+            type: "text" as const,
+            text: `## 🚀 Starting Workflow: ${workflowName}
+
+${contextId ? `**Context:** ${contextId}\n` : ""}
+${auto ? "**Mode:** Automatic (no approval prompts)\n" : "**Mode:** Manual (approval required for each step)\n"}
+
+---
+
+## Next Step
+
+Call the MCP tool \`start_workflow\` to begin:
+
+\`\`\`
+workflow_name: "${workflowName}"
+${contextId ? `context_id: "${contextId}"` : ""}
+${auto ? "auto: true" : ""}
+\`\`\`
+
+The workflow will guide you through each step automatically.`,
+          }],
+        };
+      }
+
+      // Action: status - Show workflow status
+      if (action === "status") {
+        // Note: Workflow status requires accessing sessionManager
+        // For now, provide guidance
+        return {
+          content: [{
+            type: "text" as const,
+            text: `## 📊 Workflow Status
+
+To check the status of an active workflow, use the MCP tool \`workflow_status\`.
+
+If you have a workflow running, it will show:
+- Current step
+- Completed actions
+- Next action required
+
+If no workflow is active, you'll see a message indicating no active sessions.`,
+          }],
+        };
+      }
+
+      return {
+        content: [{
+          type: "text" as const,
+          text: `## ⚠️ Invalid Action\n\nSupported actions: 'list', 'start', 'status'\n\nExample: \`speckit: workflow list\``,
         }],
       };
     }

@@ -348,6 +348,77 @@ Then use: `speckit: validate my-custom`
 
 ---
 
+### speckit_workflow
+
+**Purpose**: Manage multi-step workflows (list, start, check status).
+
+**Slash Command**: `/speckit.workflow`
+
+**Keyword Triggers**: `speckit: workflow`, `démarrer un workflow`, `workflow list`
+
+**Parameters** (all optional):
+
+- `action`: Action to perform
+  - `list` - Show all available workflows (default)
+  - `start` - Start a workflow
+  - `status` - Check workflow status
+- `workflowName`: Name of workflow to start (required for `start` action)
+- `contextId`: Optional context identifier (e.g., work item ID, feature name)
+- `auto`: Auto mode - run without approval prompts (default: `false`)
+
+**Examples**:
+
+```text
+speckit: workflow list
+speckit: workflow start feature-standard
+speckit: workflow start bugfix MyBug auto
+speckit: workflow status
+/speckit.workflow list
+```
+
+**Behavior**:
+
+**Action: list**
+1. Scans `.spec-kit/workflows/` (local) and `starter-kit/workflows/` (built-in)
+2. Displays table with workflow name, description, and source (🔧 Local / 📦 Built-in)
+
+**Action: start**
+1. Validates workflow exists
+2. Provides instructions to call `start_workflow` MCP tool
+3. Workflow will guide through each step automatically
+
+**Action: status**
+1. Checks active workflow session
+2. Shows current step, completed actions, next required action
+
+**Built-in Workflows**:
+
+| Workflow | Description | Steps |
+|----------|-------------|-------|
+| `feature-quick` | Quick feature implementation | specify → implement (lightweight) |
+| `feature-standard` | Standard feature workflow | specify → plan → tasks → implement |
+| `feature-full` | Full feature with validation | specify → plan → tasks → implement → validate |
+| `bugfix` | Bug fix with reproduction | reproduce → analyze → fix → test |
+
+**Creating Custom Workflows**:
+
+Create `.spec-kit/workflows/my-workflow.yaml`:
+
+```yaml
+name: my-workflow
+version: "1.0.0"
+description: "My custom workflow"
+
+steps:
+  - id: step1
+    agent: SpecAgent
+    action: call_agent
+    params:
+      instructions: "Do something..."
+```
+
+---
+
 ## Customization Guide
 
 ### Modifying Prompts

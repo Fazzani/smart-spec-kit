@@ -154,6 +154,7 @@ Tapez `/` dans Copilot Chat pour voir les slash commands disponibles:
 | `/speckit.clarify` | Clarifie les requirements ambigus |
 | `/speckit.validate` | Valide la conformité (sécurité, RGPD, etc.) |
 | `/speckit.memory` | Gère la mémoire projet |
+| `/speckit.workflow` | Gère les workflows (list, start, status) |
 | `/speckit.help` | Obtient de l'aide sur Spec-Kit |
 
 ### Commandes par mots-clés (Alternative)
@@ -168,6 +169,7 @@ Vous pouvez aussi utiliser ces phrases dans Copilot Chat:
 | `speckit: implement` | `implémenter`, `coder` | Exécute les tâches |
 | `speckit: clarify` | `clarifier`, `préciser` | Clarifie les requirements ambigus |
 | `speckit: validate` | `valider`, `vérifier` | Valide la conformité (sécurité, RGPD, etc.) |
+| `speckit: workflow` | `démarrer un workflow`, `workflow list` | Gère les workflows multi-étapes |
 | `speckit: memory` | `enrichir la mémoire`, `ajouter au contexte` | Gère la mémoire projet |
 | `speckit: help` | `aide sur speckit` | Obtient de l'aide sur Spec-Kit |
 
