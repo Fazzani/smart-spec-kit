@@ -172,6 +172,7 @@ Vous pouvez aussi utiliser ces phrases dans Copilot Chat:
 | `speckit: workflow` | `démarrer un workflow`, `workflow list` | Gère les workflows multi-étapes |
 | `speckit: memory` | `enrichir la mémoire`, `ajouter au contexte` | Gère la mémoire projet |
 | `speckit: help` | `aide sur speckit` | Obtient de l'aide sur Spec-Kit |
+| `speckit: init` | `init` | Initialise Spec-Kit (demande guidé vs auto par défaut) |
 
 ---
 
@@ -180,6 +181,8 @@ Vous pouvez aussi utiliser ces phrases dans Copilot Chat:
 ### 1. Établir les principes du projet
 
 Éditez `.spec-kit/memory/constitution.md` avec vos principes de développement:
+
+Astuce: lancez `speckit: init` avec `guided: true` pour un mode questions/réponses (sinon `init` vous demandera le mode). En mode auto, la constitution est remplie depuis la stack détectée.
 
 ```markdown
 # Constitution du Projet

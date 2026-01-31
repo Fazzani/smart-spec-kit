@@ -52,6 +52,41 @@ Spec-Kit is an MCP (Model Context Protocol) server that provides **customizable 
 
 > **Note**: All parameters are optional. Spec-Kit is designed to be conversational - if you don't provide information upfront, Copilot will ask for it.
 
+### init
+
+**Purpose**: Initialize Spec-Kit in the current project. If `guided` is not specified, Spec-Kit asks you to choose guided vs auto. Guided mode is interactive (Q/A). Auto mode fills the constitution from project detection.
+
+**Keyword Triggers**: `speckit: init`, `init`
+
+**Parameters** (all optional):
+
+- `force`: Overwrite existing Spec-Kit files
+- `guided`: Enable guided setup (detect stack and fill constitution)
+- `session_id`: Session ID for guided mode
+- `answer`: Answer for the current guided question
+- `cancel`: Cancel guided session
+- `answers`: Overrides for constitution fields
+  - `projectName`, `ratificationDate`, `lastAmended`
+  - `language`, `framework`, `database`, `testing`, `codeStyle`
+  - `approvers`
+
+**Examples**:
+
+```text
+speckit: init
+speckit: init guided=true
+speckit: init guided=true answer="My Project"
+speckit: init guided=true session_id=init-abc answer="auto"
+speckit: init guided=true answers={"projectName":"Demo","language":"TypeScript","framework":"React"}
+```
+
+**Behavior**:
+
+1. Installs prompts, templates, memory, rules, agents, and specs folders
+2. If `guided` is enabled, detects the stack from project files
+3. Updates `.spec-kit/memory/constitution.md` with detected or provided values
+4. Lists any remaining placeholders to fill
+
 ### speckit_specify
 
 **Purpose**: Create a functional specification from requirements.

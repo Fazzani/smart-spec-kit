@@ -1,12 +1,12 @@
 # Bugfix Workflow
-# Streamlined process for bug fixes with validation checkpoints
+# Structured process for bug fixes
 
 name: bugfix
 displayName: "Bug Fix"
 description: "Structured workflow for analyzing, fixing, and validating bug corrections"
 
 metadata:
-  version: "1.0"
+  version: "2.0"
   author: "Spec-Kit"
   tags:
     - bugfix
@@ -17,31 +17,37 @@ template: bugfix-report.md
 defaultAgent: SpecAgent
 
 steps:
+  # Step 1: Analyze Bug
   - id: analyze-bug
-    name: "Analyze Bug & Root Cause"
-    action: fetch_ado
+    name: "1. Analyze Bug"
+    action: call_agent
+    agent: SpecAgent
     description: |
-      Retrieve the bug work item from Azure DevOps and analyze:
-      - Reproduction steps
-      - Error logs and stack traces
-      - Affected components
-      - User impact assessment
+      Analyze the bug based on user description:
       
-      Identify the root cause of the issue.
+      - Understand the symptoms
+      - Identify reproduction steps
+      - Locate affected components
+      - Determine root cause
+      
+      Document findings clearly.
+    inputs:
+      bug_description: "Description from user"
     outputs:
-      - bug_data
       - root_cause_analysis
 
+  # Step 2: Plan Fix
   - id: plan-fix
-    name: "Plan Correction"
+    name: "2. Plan Correction"
     action: call_agent
     agent: PlanAgent
     description: |
-      Create a correction plan including:
+      Create a correction plan:
+      
       - Proposed fix approach
       - Files/components to modify
       - Potential side effects
-      - Rollback strategy if needed
+      - Test cases to verify fix
       
       Keep the fix minimal and focused.
     inputs:
@@ -49,51 +55,36 @@ steps:
     outputs:
       - fix_plan
 
-  - id: security-check
-    name: "Security Validation"
-    action: review
-    agent: GovAgent
-    description: |
-      Quick security review of the proposed fix:
-      - [ ] No new vulnerabilities introduced
-      - [ ] Input validation maintained
-      - [ ] No sensitive data exposure
-      - [ ] Authentication/Authorization intact
-    inputs:
-      document: "fix_plan"
-    outputs:
-      - security_clearance
-
+  # Step 3: Implement Fix
   - id: implement-fix
-    name: "Implement & Test"
-    action: generate_content
+    name: "3. Implement Fix"
+    action: call_agent
+    agent: SpecAgent
     description: |
-      Implement the fix following the plan:
-      1. Write the code fix
-      2. Add unit tests for the bug scenario
-      3. Add regression tests
-      4. Update documentation if needed
+      Implement the bug fix:
       
-      Ensure test coverage for the fixed code path.
+      - Make minimal changes
+      - Follow project conventions
+      - Add/update tests
+      - Document the fix
     inputs:
-      plan: "fix_plan"
+      source: "fix_plan"
     outputs:
-      - code_changes
-      - test_cases
+      - implementation
 
-  - id: final-review
-    name: "Final Review"
+  # Step 4: Verify
+  - id: verify-fix
+    name: "4. Verify Fix"
     action: review
     agent: GovAgent
     description: |
-      Final validation before merge:
-      - [ ] Fix addresses root cause
-      - [ ] No regression introduced
+      Verify the fix is complete:
+      
+      - [ ] Bug is resolved
+      - [ ] No regressions introduced
       - [ ] Tests pass
-      - [ ] Code review approved
-      - [ ] Documentation updated
+      - [ ] No security issues
     inputs:
-      changes: "code_changes"
-      tests: "test_cases"
+      source: "implementation"
     outputs:
-      - approval_status
+      - verification_report

@@ -7,6 +7,31 @@
 import { z } from "zod";
 
 /**
+ * Schema for input parameter (flexible format)
+ */
+const InputItemSchema = z.object({
+  name: z.string(),
+  description: z.string().optional(),
+  required: z.boolean().optional(),
+});
+
+/**
+ * Flexible input value: can be string or array of strings
+ */
+const FlexibleInputValue = z.union([
+  z.string(),
+  z.array(z.string()),
+]);
+
+/**
+ * Flexible inputs: can be array of objects or key-value record with flexible values
+ */
+const FlexibleInputsSchema = z.union([
+  z.array(InputItemSchema),
+  z.record(z.string(), FlexibleInputValue),
+]).optional();
+
+/**
  * Schema for a single workflow step
  */
 export const WorkflowStepSchema = z.object({
@@ -16,7 +41,7 @@ export const WorkflowStepSchema = z.object({
     .describe("The type of action to perform"),
   description: z.string().describe("Detailed description of what this step does"),
   agent: z.string().optional().describe("Agent to use for this step (e.g., SpecAgent, PlanAgent)"),
-  inputs: z.record(z.string(), z.string()).optional().describe("Input parameters for the step"),
+  inputs: FlexibleInputsSchema.describe("Input parameters for the step"),
   outputs: z.array(z.string()).optional().describe("Expected outputs from this step"),
   next: z.string().optional().describe("Next step ID (if not sequential)"),
 });

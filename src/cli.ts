@@ -561,6 +561,7 @@ ${colors.bold}Prochaines étapes:${colors.reset}
    Tapez / et cherchez les commandes /speckit.*
 
 ${colors.bold}Slash Commands Disponibles:${colors.reset}
+   /speckit.init       Initialiser Spec-Kit (guidé ou auto)
    /speckit.specify    Créer une spécification
    /speckit.plan       Créer le plan technique
    /speckit.tasks      Générer les tâches
