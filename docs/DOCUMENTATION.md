@@ -424,12 +424,78 @@ steps:
 - `save_artifact` - Save to file
 - `validate` - Validate output
 
-**Available agents**:
+**Available Agents** (System Prompts):
 
-- `SpecAgent` - Writes specifications
-- `PlanAgent` - Creates plans
-- `GovAgent` - Validates governance
-- `TestAgent` - Creates test strategies
+⚠️ **Important Note**: These are NOT GitHub Copilot agents. They are **predefined system prompts** that guide Copilot's behavior for each workflow step.
+
+- **`SpecAgent`** - Writes specifications and analyzes requirements
+- **`PlanAgent`** - Creates technical plans and decomposes tasks
+- **`GovAgent`** - Validates governance, security, and compliance
+- **`TestAgent`** - Creates test strategies and test cases
+
+### Understanding Spec-Kit Agents
+
+Spec-Kit's "agents" are **NOT** registered agents in GitHub Copilot. Instead, they are:
+
+1. **System Prompts** - Instructions defined in TypeScript (`src/prompts/agents.ts`)
+2. **Role Definitions** - Each agent has specific expertise and guidelines
+3. **Behavioral Guides** - They shape how Copilot responds to specific tasks
+
+**How They Work**:
+
+When a workflow step specifies an agent:
+
+```yaml
+steps:
+  - id: plan
+    agent: PlanAgent  # ← Uses PlanAgent's system prompt
+    action: call_agent
+    description: "Create implementation plan"
+```
+
+Spec-Kit:
+
+1. Looks up the system prompt for `PlanAgent`
+2. Sends it to Copilot along with the task
+3. Copilot responds following that agent's guidelines
+
+**Why Use Agents?**
+
+Different tasks need different expertise:
+
+```yaml
+steps:
+  - id: analyze-bug          # ← No agent = general purpose
+    action: fetch_ado
+    
+  - id: create-fix-plan      # ← Use PlanAgent = focused planning
+    agent: PlanAgent
+    action: call_agent
+    
+  - id: security-review      # ← Use GovAgent = security focus
+    agent: GovAgent
+    action: review
+```
+
+Each agent brings specialized guidelines to shape Copilot's response appropriately.
+
+**Customizing Agents**:
+
+Edit system prompts in `src/prompts/agents.ts`:
+
+```typescript
+export const SpecAgent: AgentDefinition = {
+  name: "SpecAgent",
+  displayName: "Specification Agent",
+  description: "...",
+  systemPrompt: `You are SpecAgent, an expert technical writer...
+    // Your custom guidelines here
+  `,
+  capabilities: [...]
+};
+```
+
+Changes take effect on the next workflow execution. No registration needed - agents are internal to Spec-Kit.
 
 ### Workflow Validation Schema
 
@@ -509,7 +575,7 @@ steps:
 
 When a workflow violates the schema, you'll get a detailed error message:
 
-```
+```text
 Error: Invalid workflow "my-workflow":
   - steps.0.action: Invalid enum value. Expected 'call_agent' | 'fetch_ado' | 'generate_content' | 'review' | 'create_file'
   - displayName: Required
@@ -519,19 +585,24 @@ Error: Invalid workflow "my-workflow":
 **Common Validation Issues**:
 
 1. **Missing required field**
-   ```
+
+   ```text
    Error: name: Required
    ```
+
    → Add the missing field
 
 2. **Invalid action type**
-   ```
+
+   ```text
    Error: steps.0.action: Invalid enum value
    ```
+
    → Use one of: `call_agent`, `fetch_ado`, `generate_content`, `review`, `create_file`
 
 3. **Empty steps array**
-   ```
+
+   ```text
    Error: steps: Array must contain at least 1 element(s)
    ```
    → Add at least one step
@@ -540,7 +611,8 @@ Error: Invalid workflow "my-workflow":
    → Each `steps[i].id` must be unique within the workflow
 
 5. **Invalid step without required fields**
-   ```
+
+   ```text
    Error: steps.2.description: Required
    ```
    → Ensure each step has `id`, `name`, `action`, and `description`
@@ -646,6 +718,7 @@ Lightweight workflow for quick wins and simple features.
 3. Auto-update memory
 
 **Example**:
+
 ```text
 speckit: start_workflow workflow_name="feature-quick"
 ```

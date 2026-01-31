@@ -263,6 +263,23 @@ steps:
     description: "Génère le plan"
 ```
 
+#### À propos des "Agents"
+
+⚠️ **Important** : Les agents Spec-Kit (SpecAgent, PlanAgent, GovAgent, TestAgent) **ne sont PAS** des agents GitHub Copilot.
+
+Ce sont des **system prompts prédéfinis** qui guident le comportement de Copilot :
+
+| Agent | Rôle |
+|-------|------|
+| **SpecAgent** | Rédacteur de spécifications |
+| **PlanAgent** | Planificateur technique |
+| **GovAgent** | Validateur de gouvernance |
+| **TestAgent** | Stratège de tests |
+
+Quand vous mettez `agent: SpecAgent` dans une étape, Spec-Kit envoie le system prompt de SpecAgent à Copilot pour orienter sa réponse.
+
+Pour plus de détails : [Understanding Spec-Kit Agents](docs/DOCUMENTATION.md#understanding-spec-kit-agents)
+
 #### Validation du Schéma de Workflow
 
 Chaque workflow YAML est validé automatiquement contre un schéma Zod. Les champs obligatoires sont :
