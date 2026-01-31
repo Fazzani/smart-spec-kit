@@ -8,11 +8,12 @@
 
 ## Task Format
 
-```
+```text
 - [ ] T### [P?] [Story?] Description - `path/to/file.ext`
 ```
 
 **Legend**:
+
 - `T###`: Task ID (sequential)
 - `[P]`: Can be executed in parallel with other `[P]` tasks in same phase
 - `[Story?]`: Associated user story ID (optional)
@@ -107,7 +108,7 @@
 
 ## Dependencies & Execution Order
 
-```
+```text
 Phase 1 (Setup)
     │
     ▼
@@ -129,7 +130,7 @@ Phase 3 (US-1)  Phase 4 (US-2)  Phase 5 (US-3)  ← Can run in parallel
 
 Tasks marked `[P]` within the same phase can run simultaneously:
 
-```
+```text
 Phase 3, Story 1:
 ├── T010 Create model (sequential - others depend on this)
 │

@@ -387,7 +387,7 @@ Templates define document structure. Create/edit in `.spec-kit/templates/`:
 
 ### Creating a New Workflow
 
-Workflows are YAML files defining multi-step processes:
+Workflows are YAML files defining multi-step processes. All workflows are validated against a schema (`src/schemas/workflowSchema.ts`) to ensure correctness.
 
 ```yaml
 # .spec-kit/workflows/my-workflow.yaml
@@ -430,6 +430,126 @@ steps:
 - `PlanAgent` - Creates plans
 - `GovAgent` - Validates governance
 - `TestAgent` - Creates test strategies
+
+### Workflow Validation Schema
+
+Every workflow YAML is automatically validated using Zod schema (`src/schemas/workflowSchema.ts`). This ensures all workflows follow the required structure and catches errors early.
+
+**Required Top-Level Fields**:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `name` | string | Workflow identifier (kebab-case recommended) |
+| `displayName` | string | User-readable display name |
+| `description` | string | What this workflow accomplishes |
+| `template` | string | Associated template file (e.g., `functional-spec.md`) |
+| `steps` | array | Array of steps (min. 1 step required) |
+
+**Optional Top-Level Fields**:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `defaultAgent` | string | Default agent for all steps (default: `SpecAgent`) |
+| `metadata` | object | Version, author, created, tags |
+
+**Step Schema** (each object in the `steps` array):
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `id` | string | ✅ | Unique step identifier within workflow |
+| `name` | string | ✅ | Human-readable step name |
+| `action` | enum | ✅ | Action type: `call_agent`, `fetch_ado`, `generate_content`, `review`, `create_file` |
+| `description` | string | ✅ | What this step does |
+| `agent` | string | ❌ | Agent to use (overrides `defaultAgent`) |
+| `inputs` | object | ❌ | Input parameters for this step |
+| `outputs` | array | ❌ | Expected output types |
+| `next` | string | ❌ | Next step ID (for non-sequential workflows) |
+
+**Valid Example Workflow**:
+
+```yaml
+name: analysis-workflow
+displayName: "Analysis Workflow"
+description: "Analyze requirements and create a specification"
+template: functional-spec.md
+defaultAgent: SpecAgent
+metadata:
+  version: "1.0"
+  author: "Team"
+
+steps:
+  - id: gather
+    name: "Gather Requirements"
+    action: call_agent
+    description: "Collect and document requirements"
+    outputs:
+      - requirements.md
+
+  - id: analyze
+    name: "Analyze"
+    action: call_agent
+    agent: SpecAgent
+    description: "Analyze gathered requirements"
+    inputs:
+      requirements: requirements.md
+    outputs:
+      - analysis.md
+
+  - id: draft-spec
+    name: "Draft Specification"
+    action: generate_content
+    description: "Generate specification from analysis"
+    inputs:
+      analysis: analysis.md
+    outputs:
+      - spec.md
+```
+
+**Validation Errors**:
+
+When a workflow violates the schema, you'll get a detailed error message:
+
+```
+Error: Invalid workflow "my-workflow":
+  - steps.0.action: Invalid enum value. Expected 'call_agent' | 'fetch_ado' | 'generate_content' | 'review' | 'create_file'
+  - displayName: Required
+  - name: String must contain at least 1 character(s)
+```
+
+**Common Validation Issues**:
+
+1. **Missing required field**
+   ```
+   Error: name: Required
+   ```
+   → Add the missing field
+
+2. **Invalid action type**
+   ```
+   Error: steps.0.action: Invalid enum value
+   ```
+   → Use one of: `call_agent`, `fetch_ado`, `generate_content`, `review`, `create_file`
+
+3. **Empty steps array**
+   ```
+   Error: steps: Array must contain at least 1 element(s)
+   ```
+   → Add at least one step
+
+4. **Duplicate step IDs**
+   → Each `steps[i].id` must be unique within the workflow
+
+5. **Invalid step without required fields**
+   ```
+   Error: steps.2.description: Required
+   ```
+   → Ensure each step has `id`, `name`, `action`, and `description`
+
+**Schema Location**:
+
+- **Source**: `src/schemas/workflowSchema.ts` (TypeScript Zod definitions)
+- **Validation**: Automatic when loading workflows via `loadWorkflow()` in `src/utils/workflowLoader.ts`
+- **Error Handling**: Invalid workflows throw descriptive errors before execution
 
 ### Editing the Constitution
 

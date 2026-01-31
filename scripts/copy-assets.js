@@ -14,8 +14,6 @@ const rootDir = path.resolve(__dirname, '..');
 // This script ensures they exist and logs info
 
 const assets = [
-  'workflows', 
-  'templates',
   'starter-kit/prompts',
   'starter-kit/templates',
   'starter-kit/memory',

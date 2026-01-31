@@ -76,46 +76,59 @@ Puis rechargez VS Code: `Ctrl+Shift+P` → "Developer: Reload Window"
 
 ## 📁 Structure du Projet
 
-Après installation, votre projet contient:
+### Structure interne du package Spec-Kit
 
 ```text
-votre-projet/
-├── .github/
-│   ├── prompts/                  # Slash commands pour Copilot
-│   │   ├── speckit.specify.prompt.md
-│   │   ├── speckit.plan.prompt.md
-│   │   ├── speckit.tasks.prompt.md
-│   │   ├── speckit.implement.prompt.md
-│   │   ├── speckit.clarify.prompt.md
-│   │   ├── speckit.validate.prompt.md
-│   │   ├── speckit.memory.prompt.md
-│   │   └── speckit.help.prompt.md
-│   └── copilot-instructions.md   # Guide Copilot sur l'utilisation de Spec-Kit
-├── .spec-kit/
-│   ├── prompts/                  # Prompts (lus par les outils MCP)
+smart-spec-kit-mcp/
+├── starter-kit/                  # Source unique de la configuration
+│   ├── prompts/                  # Prompts MCP (specify, plan, implement, etc.)
 │   │   ├── specify.md
 │   │   ├── plan.md
 │   │   ├── tasks.md
 │   │   ├── implement.md
 │   │   ├── clarify.md
-│   │   └── validate.md
+│   │   ├── validate.md
+│   │   └── memory.md
 │   ├── templates/                # Templates de documents
 │   │   ├── functional-spec.md
+│   │   ├── bugfix-report.md
 │   │   ├── plan-template.md
 │   │   └── tasks-template.md
+│   ├── workflows/                # Workflows YAML prédéfinis
+│   │   ├── feature-quick.yaml    # 3-step (spécification rapide)
+│   │   ├── feature-standard.yaml # 4-step (complet)
+│   │   ├── feature-full.yaml     # 5-step (détaillé)
+│   │   ├── bugfix-quick.yaml     # 2-step (bugfix rapide)
+│   │   └── bugfix.yaml
 │   ├── rules/                    # Règles de validation
-│   │   ├── security-rules.md     # Règles de sécurité
-│   │   └── rgpd-rules.md         # Conformité RGPD
+│   │   ├── security-rules.md     # Règles OWASP
+│   │   └── rgpd-rules.md         # Conformité GDPR
 │   ├── memory/                   # Contexte projet
 │   │   └── constitution.md       # Principes du projet
-│   └── workflows/                # Workflows automatisés
-│       ├── feature-quick.yaml    # Quick wins (léger)
-│       ├── feature-standard.yaml
-│       ├── feature-full.yaml
-│       └── bugfix.yaml
+│   ├── github-prompts/           # Slash commands pour Copilot
+│   │   └── speckit.*.prompt.md
+│   └── copilot-instructions.md   # Guide Copilot
+```
+
+### Structure après installation dans votre projet
+
+```text
+votre-projet/
+├── .github/
+│   └── copilot-instructions.md   # Copié lors du setup
+├── .spec-kit/                    # Configuration locale (personnalisations)
+│   ├── prompts/                  # Override les prompts par défaut
+│   ├── templates/                # Override les templates par défaut
+│   ├── workflows/                # Vos workflows personnalisés
+│   ├── rules/                    # Vos règles de validation
+│   └── memory/
+│       └── constitution.md       # Principes de votre projet
 └── specs/                        # Spécifications générées
     └── validations/              # Rapports de validation
 ```
+
+**Note**: Les workflows et templates par défaut viennent de `starter-kit/` du package. 
+Vous pouvez personnaliser en créant des fichiers dans `.spec-kit/`.
 
 ---
 
@@ -249,6 +262,24 @@ steps:
     agent: PlanAgent
     description: "Génère le plan"
 ```
+
+#### Validation du Schéma de Workflow
+
+Chaque workflow YAML est validé automatiquement contre un schéma Zod. Les champs obligatoires sont :
+- `name` - Identifiant unique
+- `displayName` - Nom visible
+- `description` - Description
+- `template` - Fichier template
+- `steps` - Au moins une étape
+
+Erreur si validation échoue :
+```
+Error: Invalid workflow "mon-workflow":
+  - steps.0.action: Invalid enum value
+  - name: Required
+```
+
+Pour plus de détails sur le schéma, voir [Workflow Validation Schema](docs/DOCUMENTATION.md#workflow-validation-schema).
 
 ---
 

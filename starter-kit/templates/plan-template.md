@@ -9,6 +9,7 @@
 ## Technical Context
 
 ### Tech Stack
+
 | Component | Technology | Version |
 |-----------|------------|---------|
 | Language | [TO FILL] | |
@@ -18,7 +19,7 @@
 
 ### Architecture Overview
 
-```
+```text
 [TO FILL: ASCII diagram or description of architecture]
 
 ┌─────────────┐    ┌─────────────┐    ┌─────────────┐
@@ -50,6 +51,7 @@ tests/
 ## Implementation Phases
 
 ### Phase 0: Research & Design
+
 **Duration**: [X days]
 **Output**: research.md, data-model.md
 
@@ -59,6 +61,7 @@ tests/
 - [ ] Define API contracts
 
 ### Phase 1: Foundation
+
 **Duration**: [X days]
 **Dependencies**: Phase 0
 
@@ -68,6 +71,7 @@ tests/
 - [ ] Set up database schema
 
 ### Phase 2: Core Implementation
+
 **Duration**: [X days]
 **Dependencies**: Phase 1
 
@@ -76,6 +80,7 @@ tests/
 - [ ] Add unit tests
 
 ### Phase 3: Integration & Polish
+
 **Duration**: [X days]
 **Dependencies**: Phase 2
 

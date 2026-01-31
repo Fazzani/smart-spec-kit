@@ -5,7 +5,7 @@
  * 
  * Resolution order:
  * 1. Local project: .spec-kit/workflows/ and .spec-kit/templates/
- * 2. Package defaults: /workflows and /templates
+ * 2. Package defaults: starter-kit/workflows and starter-kit/templates
  * 
  * This allows any project to customize workflows while using defaults.
  */
@@ -67,8 +67,8 @@ function getSearchPaths(assetType: "workflows" | "templates"): string[] {
     path.join(projectRoot, LOCAL_CONFIG_DIR, dir),
     // 2. Local project root: workflows/ or templates/ (for dedicated spec projects)
     path.join(projectRoot, dir),
-    // 3. Package defaults
-    path.join(packageRoot, dir),
+    // 3. Package defaults (starter-kit/)
+    path.join(packageRoot, "starter-kit", dir),
   ];
 }
 
