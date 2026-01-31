@@ -22,8 +22,8 @@ $ARGUMENTS
 2. **Validez Phase -1 Gates** (Simplicity, Anti-Abstraction, Integration-First, Test-First)
 3. **Générez le plan principal** (`plan.md`)
 4. **Générez les documents de support**:
-   - `data-model.md` - Entités et relations
-   - `contracts/api.yaml` - Contrat OpenAPI 3.0
+   - `data-model.md` - Entités et relations (si applicable)
+   - `contracts/api.yaml` - Contrat OpenAPI 3.0 (si applicable)
    - `contracts/events.md` - Événements temps réel (si applicable)
    - `quickstart.md` - Scénarios de validation manuelle
    - `research.md` - Recherche technique (optionnel, si décisions complexes)
@@ -34,8 +34,8 @@ $ARGUMENTS
 | Document | Template | Obligatoire |
 |----------|----------|-------------|
 | Plan principal | `plan-template.md` | ✅ |
-| Modèle de données | `data-model.md` | ✅ |
-| Contrat API | `contracts/api-template.yaml` | ✅ |
+| Modèle de données | `data-model.md` | Optionnel selon le projet |
+| Contrat API | `contracts/api-template.yaml` | Optionnel selon le projet |
 | Événements | `contracts/events-template.md` | Si temps réel |
 | Quickstart | `quickstart.md` | ✅ |
 | Recherche | `research.md` | Optionnel |
