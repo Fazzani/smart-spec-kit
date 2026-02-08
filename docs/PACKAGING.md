@@ -47,7 +47,10 @@ npx smart-spec-kit-mcp setup
 Configure automatiquement:
 - VS Code MCP server (profils et settings)
 - Slash commands (`.github/prompts/speckit.*.prompt.md`)
+- Agents natifs VS Code (`.github/agents/*.agent.md`) - VS Code 1.109+
+- Agent skills (`.github/skills/*/SKILL.md`) - VS Code 1.109+
 - Prompts, templates, workflows dans `.spec-kit/`
+- Copilot Memory et agent/skill locations dans settings
 
 ### Option 2: NPX Direct
 
@@ -280,8 +283,11 @@ smart-spec-kit-mcp/
 │   └── utils/
 ├── starter-kit/             ← Installé par setup
 │   ├── github-prompts/     ← Slash commands VS Code
+│   ├── github-agents/      ← 🆕 Agents natifs VS Code (.agent.md)
+│   ├── github-skills/      ← 🆕 Compétences agents (SKILL.md)
 │   ├── prompts/            ← Prompts MCP
 │   ├── templates/          ← Templates de specs
+│   ├── agents/             ← Agents system prompts
 │   ├── rules/              ← Règles de validation
 │   ├── memory/             ← Constitution projet
 │   └── workflows/          ← Workflows par défaut

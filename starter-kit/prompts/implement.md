@@ -17,6 +17,16 @@ Read and understand:
 - The project constitution (for conventions)
 - Related code files
 
+### Codebase Exploration (Search Subagent)
+
+Use the **search subagent** (`runSubagent`) for deep codebase exploration:
+- Delegate file searches to preserve your main context window
+- Ask: "Find files related to {component}", "Show existing patterns for {pattern}"
+- The subagent explores broadly and returns a focused summary
+- Only bring the relevant code into your context for implementation
+
+This prevents context overload when navigating large codebases.
+
 ## 3. Implementation Guidelines
 
 ### Code Quality
@@ -134,7 +144,26 @@ After each implementation, **automatically** save relevant learnings to `.spec-k
 
 ## 9. Iteration
 
-Ask the user:
+**PREFERRED: Use the `askQuestions` tool** for structured step-between-tasks interaction:
+
+```json
+{
+  "questions": [{
+    "header": "Next Step",
+    "question": "Task {ID} completed successfully. What would you like to do next?",
+    "options": [
+      { "label": "Continue with T{next}", "description": "{next task description}", "recommended": true },
+      { "label": "Review changes", "description": "Review all changes made so far before continuing" },
+      { "label": "Run tests", "description": "Execute tests to verify implementation" },
+      { "label": "Stop here", "description": "Save progress and stop implementation" }
+    ]
+  }]
+}
+```
+
+### Fallback: Plain Text
+
+If `askQuestions` is not available:
 - "Task {ID} completed. Continue with {next task}? (yes/no)"
 - If yes, proceed with next task
 - If no, summarize progress made

@@ -5,6 +5,7 @@ You are clarifying ambiguous requirements in a specification. Follow this struct
 ## 1. Find Ambiguities
 
 Scan the specification for:
+
 - `[NEEDS CLARIFICATION]` markers
 - Vague terms ("fast", "easy", "simple")
 - Missing details (undefined behaviors)
@@ -14,6 +15,7 @@ Scan the specification for:
 ## 2. Prioritize Clarifications
 
 Focus on ambiguities that:
+
 - Block implementation
 - Could lead to rework
 - Affect user experience significantly
@@ -21,7 +23,38 @@ Focus on ambiguities that:
 
 ## 3. Ask Targeted Questions
 
-For each ambiguity:
+**PREFERRED: Use the `askQuestions` tool** to present structured questions with selectable options. This provides a much better UX than free-text questions.
+
+For each ambiguity, use `askQuestions` with:
+
+- A clear question header (max 12 chars)
+- The full question text with context
+- 2-6 concrete options with descriptions
+- Mark your recommended option with `recommended: true`
+- Set `allowFreeformInput: true` if custom answers make sense
+
+### askQuestions Format Example
+
+```json
+{
+  "questions": [{
+    "header": "Auth Method",
+    "question": "The spec mentions 'user authentication' but doesn't specify the method. Which approach fits your needs?",
+    "options": [
+      { "label": "OAuth 2.0 + OIDC", "description": "Industry standard, supports SSO and social login", "recommended": true },
+      { "label": "Email/Password", "description": "Simple, self-contained, no external dependencies" },
+      { "label": "Magic Links", "description": "Passwordless, email-based authentication" }
+    ],
+    "allowFreeformInput": true
+  }]
+}
+```
+
+**Batch related questions** (max 4 per call) to minimize interruptions.
+
+### Fallback: Markdown Format
+
+If `askQuestions` is not available, use this markdown format:
 
 ```markdown
 ### Clarification Needed: {Topic}

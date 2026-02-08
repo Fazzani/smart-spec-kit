@@ -36,6 +36,16 @@ Plateforme d'orchestration automatisée pour le **développement piloté par les
 - **🔗 Azure DevOps**: Intégration native via MCP
 - **❓ Aide Contextuelle**: Demandez de l'aide sur Spec-Kit directement dans Copilot
 
+### 🆕 VS Code 1.109+ (Février 2026)
+
+- **🧑‍💼 Agents Natifs** (`.agent.md`): 6 agents Copilot dédiés (Spec, Plan, Governance, Test, Conductor, Implement)
+- **🧠 Agent Skills GA**: 3 compétences partagées (spec-driven-dev, security-validation, api-design)
+- **🎭 Orchestration par Subagents**: Conductor délègue aux agents spécialisés en parallèle
+- **❓ askQuestions**: UX interactive structurée pour la clarification et la constitution
+- **📊 MCP Apps**: Dashboards interactifs (workflow progress, matrice de traçabilité)
+- **💾 Copilot Memory**: Mémoire duale (native cross-session + projet partagé en git)
+- **🔎 Search Subagent**: Exploration du codebase en contexte isolé pour préserver le contexte principal
+
 ---
 
 ## 🏆 Pourquoi Smart Spec-Kit vs GitHub Spec-Kit ?
@@ -82,6 +92,8 @@ Cette commande configure automatiquement:
 - ✅ VS Code settings.json (MCP server)
 - ✅ Tous les profils VS Code (Windows, macOS, Linux)
 - ✅ `.github/copilot-instructions.md` (guide Copilot)
+- ✅ `.github/agents/` (agents natifs VS Code 1.109+)
+- ✅ `.github/skills/` (compétences agents)
 - ✅ `.spec-kit/` avec prompts, templates et workflows
 
 > **Note macOS**: Si vous avez une erreur `command not found`, assurez-vous que npm/npx est à jour: `npm install -g npm@latest`
@@ -99,7 +111,10 @@ Ajoutez dans `.vscode/settings.json`:
         "args": ["-y", "smart-spec-kit-mcp"]
       }
     }
-  }
+  },
+  "chat.agentFilesLocations": [".github/agents"],
+  "chat.agentSkillsLocations": [".github/skills"],
+  "github.copilot.chat.copilotMemory.enabled": true
 }
 ```
 
@@ -129,12 +144,12 @@ smart-spec-kit-mcp/
 │   │   ├── functional-spec.md    # Spécification fonctionnelle
 │   │   ├── plan-template.md      # Plan avec Phase -1 Gates
 │   │   ├── tasks-template.md     # Liste de tâches
-│   │   ├── data-model.md         # 🆕 Entités et relations
-│   │   ├── quickstart.md         # 🆕 Scénarios de validation
-│   │   ├── research.md           # 🆕 Recherche technique
+│   │   ├── data-model.md         # Entités et relations
+│   │   ├── quickstart.md         # Scénarios de validation
+│   │   ├── research.md           # Recherche technique
 │   │   ├── checklist-template.md
 │   │   ├── bugfix-report.md
-│   │   └── contracts/            # 🆕 Contrats API
+│   │   └── contracts/            # Contrats API
 │   │       ├── api-template.yaml # OpenAPI 3.0
 │   │       └── events-template.md # WebSocket/SSE
 │   ├── workflows/                # Workflows YAML prédéfinis
@@ -143,12 +158,23 @@ smart-spec-kit-mcp/
 │   │   ├── feature-full.yaml     # 7-step (avec validations sécurité/RGPD)
 │   │   ├── bugfix-quick.yaml     # 2-step (bugfix rapide)
 │   │   └── bugfix.yaml
-│   ├── agents/                   # Agents IA customisables
+│   ├── agents/                   # Agents IA customisables (system prompts)
 │   │   ├── SpecAgent.md          # Rédacteur de spécifications
 │   │   ├── PlanAgent.md          # Planificateur technique
 │   │   ├── GovAgent.md           # Validateur gouvernance
 │   │   ├── TestAgent.md          # Stratège de tests
-│   │   └── _CustomAgent.template.md  # Template pour créer vos agents
+│   │   └── _CustomAgent.template.md
+│   ├── github-agents/            # 🆕 Agents VS Code natifs (.agent.md)
+│   │   ├── speckit-spec.agent.md
+│   │   ├── speckit-plan.agent.md
+│   │   ├── speckit-governance.agent.md
+│   │   ├── speckit-test.agent.md
+│   │   ├── speckit-conductor.agent.md  # Orchestrateur
+│   │   └── speckit-implement.agent.md
+│   ├── github-skills/            # 🆕 Compétences agents (SKILL.md)
+│   │   ├── spec-driven-dev/SKILL.md
+│   │   ├── security-validation/SKILL.md
+│   │   └── api-design/SKILL.md
 │   ├── rules/                    # Règles de validation
 │   │   ├── security-rules.md     # Règles OWASP
 │   │   └── rgpd-rules.md         # Conformité GDPR
@@ -164,25 +190,35 @@ smart-spec-kit-mcp/
 ```text
 votre-projet/
 ├── .github/
+│   ├── agents/                   # 🆕 Agents natifs VS Code 1.109+
+│   │   ├── speckit-spec.agent.md
+│   │   ├── speckit-plan.agent.md
+│   │   ├── speckit-conductor.agent.md
+│   │   └── ...
+│   ├── skills/                   # 🆕 Compétences agents
+│   │   ├── spec-driven-dev/SKILL.md
+│   │   ├── security-validation/SKILL.md
+│   │   └── api-design/SKILL.md
+│   ├── prompts/                  # Slash commands Copilot
 │   └── copilot-instructions.md   # Copié lors du setup
 ├── .spec-kit/                    # Configuration locale (personnalisations)
 │   ├── prompts/                  # Override les prompts par défaut
 │   ├── templates/                # Override les templates par défaut
-│   │   └── contracts/            # 🆕 Contrats API personnalisés
+│   │   └── contracts/            # Contrats API personnalisés
 │   ├── workflows/                # Vos workflows personnalisés
-│   ├── agents/                   # Vos agents personnalisés
+│   ├── agents/                   # Vos agents personnalisés (system prompts)
 │   ├── rules/                    # Vos règles de validation
 │   └── memory/
 │       └── constitution.md       # Principes de votre projet
 └── specs/                        # Spécifications générées
-    ├── [feature-name]/           # 🆕 Dossier par feature
+    ├── [feature-name]/           # Dossier par feature
     │   ├── spec.md               # Spécification fonctionnelle
     │   ├── plan.md               # Plan d'implémentation
-    │   ├── data-model.md         # 🆕 Entités et relations
-    │   ├── quickstart.md         # 🆕 Scénarios validation
+    │   ├── data-model.md         # Entités et relations
+    │   ├── quickstart.md         # Scénarios validation
     │   ├── tasks.md              # Liste des tâches
-    │   ├── research.md           # 🆕 Recherche technique (optionnel)
-    │   └── contracts/            # 🆕 Contrats API
+    │   ├── research.md           # Recherche technique (optionnel)
+    │   └── contracts/            # Contrats API
     │       ├── api.yaml          # OpenAPI 3.0
     │       └── events.md         # Événements temps réel (optionnel)
     └── validations/              # Rapports de validation
@@ -418,7 +454,30 @@ Ce sont des **system prompts prédéfinis** qui guident le comportement de Copil
 | **PlanAgent** | Planificateur technique | `PlanAgent.md` |
 | **GovAgent** | Validateur de gouvernance | `GovAgent.md` |
 | **TestAgent** | Stratège de tests | `TestAgent.md` |
+#### 🆕 Agents Natifs VS Code (1.109+)
 
+En plus des agents MCP (system prompts), Spec-Kit installe désormais des **agents natifs VS Code** dans `.github/agents/` :
+
+| Agent | Invocation | Description |
+|-------|-----------|-------------|
+| **SpecKit-Conductor** | `@SpecKit-Conductor` | Orchestrateur — délègue aux agents spécialistes |
+| **SpecKit-Spec** | `@SpecKit-Spec` | Rédaction de spécifications fonctionnelles |
+| **SpecKit-Plan** | `@SpecKit-Plan` | Planning technique avec diagrammes Mermaid |
+| **SpecKit-Governance** | `@SpecKit-Governance` | Revue sécurité, RGPD, conformité |
+| **SpecKit-Test** | `@SpecKit-Test` | Stratégie de tests et couverture |
+| **SpecKit-Implement** | `@SpecKit-Implement` | Implémentation de tâches |
+
+**Usage** : Tapez `@SpecKit-Conductor` dans Copilot Chat pour démarrer un workflow orchestré.
+
+#### 🆕 Agent Skills (1.109+)
+
+Compétences partagées entre agents dans `.github/skills/` :
+
+| Skill | Description |
+|-------|-------------|
+| **spec-driven-dev** | Méthodologie spec-driven complète |
+| **security-validation** | Framework de validation sécurité (OWASP) |
+| **api-design** | Patterns de conception REST API et data model |
 Quand vous mettez `agent: SpecAgent` dans une étape, Spec-Kit envoie le system prompt de SpecAgent à Copilot.
 
 #### Créer un Agent Personnalisé

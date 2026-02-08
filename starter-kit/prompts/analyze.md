@@ -23,6 +23,14 @@ Locate the feature directory and identify:
 
 Abort with an error message if any required file is missing.
 
+### 1.1 Codebase Exploration (Search Subagent)
+
+For `tasks-to-implementation` or `full-traceability` analysis, use the **search subagent** (`runSubagent`) to explore the codebase:
+- Delegate file searches to preserve your main analysis context
+- Ask: "Find all files implementing {requirement}", "Check if {component} exists"
+- The subagent scans broadly and returns only relevant findings
+- Use this to verify implementation coverage without overloading your context
+
 ### 2. Load Artifacts (Progressive Disclosure)
 
 Load only the minimal necessary context from each artifact:

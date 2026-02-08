@@ -55,6 +55,25 @@ Spec-Kit is an MCP (Model Context Protocol) server that provides **customizable 
    - YAML-based workflow definitions
    - Multi-step automated processes
 
+9. **Native VS Code Agents** (`.github/agents/`) - VS Code 1.109+
+   - `.agent.md` files with frontmatter configuration
+   - Model fallback chains, tool declarations, subagent orchestration
+   - Discovered automatically via `chat.agentFilesLocations` setting
+
+10. **Agent Skills** (`.github/skills/`) - VS Code 1.109+
+    - `SKILL.md` files providing reusable knowledge modules
+    - Shared between agents via `chat.agentSkillsLocations` setting
+    - Available: spec-driven-dev, security-validation, api-design
+
+11. **MCP Apps** - Interactive Visualizations
+    - Rich HTML dashboards embedded in chat responses
+    - Workflow progress dashboard (`speckit_dashboard`)
+    - Traceability matrix visualization (`speckit_traceability`)
+
+12. **Copilot Memory** - Dual Memory Architecture
+    - Native Copilot Memory: cross-session personal preferences
+    - Spec-Kit Memory (`.spec-kit/memory/`): project-level team-shared knowledge
+
 ---
 
 ## MCP Tools
@@ -796,6 +815,126 @@ steps:
 - Code audits
 - Deep research tasks
 
+---
+
+## VS Code 1.109+ Features
+
+### Native VS Code Agents (`.agent.md`)
+
+Spec-Kit ships native VS Code agents installed to `.github/agents/`. These are real Copilot Chat agents invokable with `@AgentName`.
+
+| Agent File | Chat Name | Description |
+|------------|-----------|-------------|
+| `speckit-spec.agent.md` | `@SpecKit-Spec` | Specification writing |
+| `speckit-plan.agent.md` | `@SpecKit-Plan` | Technical planning with Mermaid diagrams |
+| `speckit-governance.agent.md` | `@SpecKit-Governance` | Security, RGPD, compliance review |
+| `speckit-test.agent.md` | `@SpecKit-Test` | Testing strategy |
+| `speckit-conductor.agent.md` | `@SpecKit-Conductor` | Orchestrator — delegates to specialist agents |
+| `speckit-implement.agent.md` | `@SpecKit-Implement` | Task implementation |
+
+**Agent Frontmatter** (`.agent.md` format):
+
+```yaml
+---
+name: SpecKit-Conductor
+description: Orchestrates spec-driven development by delegating to specialist agents
+model:
+  - copilot-claude-sonnet-4
+  - copilot-gpt-4o
+tools:
+  - speckit_specify
+  - speckit_plan
+agents:
+  - SpecKit-Spec
+  - SpecKit-Plan
+user-invokable: true
+---
+```
+
+**Key Properties**:
+- `model`: Array for fallback chain (first available model is used)
+- `tools`: MCP tools the agent can call
+- `agents`: Sub-agents it can delegate to (via `agent` tool)
+- `user-invokable`: Whether users can invoke directly with `@Name`
+- `disable-model-invocation`: If true, only the user can invoke this agent
+
+**VS Code Settings** (auto-configured by setup):
+
+```json
+{
+  "chat.agentFilesLocations": [".github/agents"],
+  "chat.agentSkillsLocations": [".github/skills"]
+}
+```
+
+### Agent Skills (SKILL.md)
+
+Shared knowledge modules in `.github/skills/`:
+
+| Skill | Directory | Description |
+|-------|-----------|-------------|
+| **Spec-Driven Dev** | `spec-driven-dev/` | Complete spec-driven methodology |
+| **Security Validation** | `security-validation/` | OWASP security framework |
+| **API Design** | `api-design/` | REST API and data model patterns |
+
+Skills are auto-discovered and available to all agents.
+
+### MCP Apps (Interactive Dashboards)
+
+Two new MCP tools provide rich interactive visualizations:
+
+#### `speckit_dashboard`
+
+Generates an interactive workflow progress dashboard:
+- Workflow step status (done/active/pending)
+- Requirements and task counts
+- Coverage percentage with visual bar
+- Quality status indicators
+
+**Usage**: `speckit: dashboard` or call the `speckit_dashboard` tool.
+
+#### `speckit_traceability`
+
+Generates an interactive traceability matrix:
+- Requirement-to-task mapping with status
+- Coverage summary (covered/partial/uncovered)
+- Uses requirement IDs (FR-XXX, NFR-XXX) from specs
+
+**Usage**: `speckit: traceability` or call the `speckit_traceability` tool.
+
+### Copilot Memory (Dual Architecture)
+
+Spec-Kit uses two memory layers:
+
+| Layer | Scope | Storage | Purpose |
+|-------|-------|---------|----------|
+| **Native Copilot Memory** | Personal, cross-session | VS Code | Preferences, coding style, habits |
+| **Spec-Kit Memory** | Project, team-shared | `.spec-kit/memory/` (git) | Decisions, conventions, domain knowledge |
+
+**Enable**: `"github.copilot.chat.copilotMemory.enabled": true` in VS Code settings.
+
+**Guidelines**:
+- Personal preferences → Native Copilot Memory (automatic)
+- Team decisions → `.spec-kit/memory/` via `speckit_memory`
+- Project constitution → Always in `.spec-kit/memory/constitution.md`
+
+### Search Subagent
+
+Prompts now include guidance for using `runSubagent` to explore codebases:
+- Preserves main context window by delegating searches
+- Used in plan, implement, and analyze prompts
+- Returns focused summaries instead of raw file contents
+
+**Example**: During planning, the search subagent scans for existing patterns, models, and test approaches before architectural decisions are made.
+
+### askQuestions Tool
+
+Prompts now leverage `askQuestions` for structured interactive UX:
+- **clarify.md**: Batched clarification questions with options
+- **specify.md**: Handles ambiguity with structured disambiguation
+- **constitution.md**: Interactive project setup with multiSelect
+- **implement.md**: Task iteration (Continue/Review/Run tests/Stop)
+
 **Available Agents** (System Prompts):
 
 ⚠️ **Important Note**: These are NOT GitHub Copilot agents. They are **predefined system prompts** that guide Copilot's behavior for each workflow step.
@@ -1258,7 +1397,10 @@ After each feature or bugfix implementation, Spec-Kit **automatically** enriches
 A: Yes! Azure DevOps integration is optional. You can provide requirements directly.
 
 **Q: How do I add a new agent?**
-A: Agents are defined in the source code. For custom behavior, modify prompts instead.
+A: Create a `.agent.md` file in `.github/agents/` for native VS Code agents, or a Markdown file in `.spec-kit/agents/` for MCP system prompts. See [VS Code 1.109+ Features](#vs-code-1109-features) for details.
+
+**Q: What's the difference between native agents and Spec-Kit agents?**
+A: Native agents (`.agent.md` in `.github/agents/`) are real VS Code Chat participants invokable with `@Name`. Spec-Kit agents (`.spec-kit/agents/`) are system prompts used by MCP tools in workflows. Both complement each other.
 
 **Q: Can multiple people use Spec-Kit on the same project?**
 A: Yes! All configuration is in the project directory and can be version-controlled.

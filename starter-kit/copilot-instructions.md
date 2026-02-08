@@ -146,6 +146,21 @@ When using spec-kit:
 3. **Save outputs to `specs/`** directory
 4. **Suggest the next step** after each tool completes
 
+## Copilot Memory (VS Code 1.109+)
+
+Spec-Kit uses a **dual memory architecture**:
+
+| Layer | Scope | Storage | Purpose |
+|-------|-------|---------|---------|
+| **Copilot Memory** | Personal, cross-session | VS Code native | User preferences, coding style, workflow habits |
+| **Spec-Kit Memory** | Project, team-shared | `.spec-kit/memory/` (git) | Architectural decisions, conventions, domain knowledge |
+
+**Guidelines:**
+- When a user expresses a personal preference, let native Copilot Memory handle it
+- When a decision affects the whole project/team, save it to `.spec-kit/memory/` via `speckit_memory`
+- Always check `.spec-kit/memory/constitution.md` before generating specs — it contains project principles
+- Use `speckit_memory auto` to auto-extract learnings from the current conversation
+
 ## Tool Response Format
 
 After calling a spec-kit tool, follow the instructions in the tool response. The response will include:

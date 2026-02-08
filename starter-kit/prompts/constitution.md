@@ -21,6 +21,7 @@ Load `.spec-kit/memory/constitution.md` and identify every placeholder token of 
 ### Step 2: Collect Values for Placeholders
 
 For each placeholder:
+
 - **If user input supplies a value**: Use it directly
 - **Otherwise infer from**: README, docs, prior constitution versions, project context
 - **For dates**:
@@ -48,6 +49,7 @@ For each placeholder:
 ### Step 4: Consistency Propagation Checklist
 
 After updating, verify alignment with:
+
 - `.spec-kit/templates/plan-template.md` - Rules align with principles
 - `.spec-kit/templates/functional-spec.md` - Scope/requirements alignment
 - `.spec-kit/templates/tasks-template.md` - Task categorization reflects principles
@@ -56,6 +58,7 @@ After updating, verify alignment with:
 ### Step 5: Produce Sync Impact Report
 
 Add as a summary at the end of your response:
+
 - Version change: old → new
 - List of modified principles
 - Added sections
@@ -66,6 +69,7 @@ Add as a summary at the end of your response:
 ### Step 6: Validation
 
 Before final output, verify:
+
 - No remaining unexplained bracket tokens
 - Version line matches report
 - Dates in ISO format (YYYY-MM-DD)
@@ -89,23 +93,76 @@ Before final output, verify:
 ## 4. Partial Updates
 
 If user supplies partial updates (e.g., only one principle revision):
+
 - Still perform validation and version decision steps
 - Only update the specified sections
 
 ## 5. Missing Information
 
 If critical info is missing (e.g., ratification date unknown):
+
 - Insert `TODO(<FIELD_NAME>): explanation`
 - Include in Sync Impact Report under deferred items
 
 ## 6. Interactive Mode
 
-If no arguments provided, guide the user through:
+**PREFERRED: Use the `askQuestions` tool** for structured interactive collection of constitution values.
+
+If no arguments provided, use `askQuestions` to guide the user:
+
+### Question 1: Project Identity
+
+```json
+{
+  "questions": [{
+    "header": "Project Name",
+    "question": "What is the name of your project?",
+    "allowFreeformInput": true
+  }]
+}
+```
+
+### Question 2: Core Principles (batch these)
+
+```json
+{
+  "questions": [
+    {
+      "header": "Principles",
+      "question": "Select the core principles that should govern this project (you can select multiple):",
+      "multiSelect": true,
+      "options": [
+        { "label": "Code Quality", "description": "Tests, reviews, documentation" },
+        { "label": "Security First", "description": "OWASP, input validation, encryption", "recommended": true },
+        { "label": "User Privacy", "description": "GDPR, data minimization" },
+        { "label": "Performance", "description": "Response times, scalability targets" },
+        { "label": "Accessibility", "description": "WCAG compliance" },
+        { "label": "Simplicity", "description": "No premature abstractions" }
+      ],
+      "allowFreeformInput": true
+    },
+    {
+      "header": "Tech Stack",
+      "question": "What is your primary tech stack? (e.g., 'TypeScript, React, Node.js, PostgreSQL')",
+      "allowFreeformInput": true
+    },
+    {
+      "header": "Conventions",
+      "question": "Any specific coding standards to enforce? (e.g., 'ESLint strict, Prettier, conventional commits')",
+      "allowFreeformInput": true
+    }
+  ]
+}
+```
+
+### Fallback: Plain Text
+
+If `askQuestions` is not available, guide through plain questions:
 
 1. **Project Name**: "What is the name of your project?"
-2. **Core Principles**: "What are the 3-5 core principles that should govern this project? (e.g., Security First, User Privacy, Performance, Code Quality)"
-3. **Tech Stack**: "What technologies are you using? (languages, frameworks, databases)"
+2. **Core Principles**: "What are the 3-5 core principles that should govern this project?"
+3. **Tech Stack**: "What technologies are you using?"
 4. **Coding Conventions**: "Any specific coding standards to enforce?"
-5. **Governance**: "Who can amend these principles? What's the review process?"
+5. **Governance**: "Who can amend these principles?"
 
 Provide suggested defaults based on project context when possible.

@@ -30,6 +30,25 @@ You are creating a technical implementation plan from a specification. Follow th
 
 ---
 
+## 0.1 Codebase Exploration (Search Subagent)
+
+Before planning, explore the existing codebase using the **search subagent** to preserve your main context window:
+
+- Use `runSubagent` to investigate existing patterns, file structures, and dependencies
+- Delegate codebase searches to the subagent instead of reading many files yourself
+- Ask the subagent specific questions: "Find all API route files", "List database models", "What testing patterns are used?"
+- The subagent returns only the relevant summary, keeping your context clean
+
+**Example subagent queries:**
+- "Search for existing data models and their relationships in the codebase"
+- "Find the project's routing/API structure and list all endpoints"
+- "Identify the authentication/authorization patterns used"
+- "List all test files and describe the testing approach"
+
+This ensures architectural decisions are grounded in the real codebase state.
+
+---
+
 ## 1. Understand the Specification
 
 Read and analyze:

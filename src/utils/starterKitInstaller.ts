@@ -11,6 +11,8 @@ import * as path from "node:path";
 // Directory constants
 const GITHUB_DIR = ".github";
 const GITHUB_PROMPTS_DIR = "prompts";  // For slash commands
+const GITHUB_AGENTS_DIR = "agents";    // For native VS Code agents (.agent.md)
+const GITHUB_SKILLS_DIR = "skills";    // For agent skills (SKILL.md)
 const COPILOT_INSTRUCTIONS = "copilot-instructions.md";
 const SPEC_KIT_DIR = ".spec-kit";
 const PROMPTS_DIR = "prompts";
@@ -172,6 +174,46 @@ export async function installStarterKit(
         }
       }
     }
+
+    // Copy native VS Code agents (.agent.md) to .github/agents/
+    const githubAgentsSrc = path.join(starterKitPath, "github-agents");
+    const githubAgentsDest = path.join(projectPath, GITHUB_DIR, GITHUB_AGENTS_DIR);
+
+    if (await exists(githubAgentsSrc)) {
+      const githubAgentsExist = await exists(githubAgentsDest);
+      
+      if (githubAgentsExist && !options.force) {
+        result.skipped.push(`${GITHUB_DIR}/${GITHUB_AGENTS_DIR}`);
+      } else {
+        try {
+          await copyDir(githubAgentsSrc, githubAgentsDest);
+          result.created.push(`${GITHUB_DIR}/${GITHUB_AGENTS_DIR} (native VS Code agents)`);
+        } catch (error) {
+          result.errors.push(`Failed to copy GitHub agents: ${error}`);
+          result.success = false;
+        }
+      }
+    }
+
+    // Copy agent skills (SKILL.md) to .github/skills/
+    const githubSkillsSrc = path.join(starterKitPath, "github-skills");
+    const githubSkillsDest = path.join(projectPath, GITHUB_DIR, GITHUB_SKILLS_DIR);
+
+    if (await exists(githubSkillsSrc)) {
+      const githubSkillsExist = await exists(githubSkillsDest);
+      
+      if (githubSkillsExist && !options.force) {
+        result.skipped.push(`${GITHUB_DIR}/${GITHUB_SKILLS_DIR}`);
+      } else {
+        try {
+          await copyDir(githubSkillsSrc, githubSkillsDest);
+          result.created.push(`${GITHUB_DIR}/${GITHUB_SKILLS_DIR} (agent skills)`);
+        } catch (error) {
+          result.errors.push(`Failed to copy GitHub skills: ${error}`);
+          result.success = false;
+        }
+      }
+    }
   }
 
   // 2. Install templates to .spec-kit/templates/
@@ -295,6 +337,7 @@ export async function installStarterKit(
 
 /**
  * Generate VS Code MCP configuration for settings.json
+ * Includes MCP server config and agent/skill file locations for VS Code 1.109+
  */
 export function generateVsCodeConfig(): string {
   return JSON.stringify({
@@ -305,7 +348,14 @@ export function generateVsCodeConfig(): string {
           "args": ["-y", "spec-kit-mcp"]
         }
       }
-    }
+    },
+    "chat.agentFilesLocations": [
+      ".github/agents"
+    ],
+    "chat.agentSkillsLocations": [
+      ".github/skills"
+    ],
+    "github.copilot.chat.copilotMemory.enabled": true
   }, null, 2);
 }
 
@@ -354,29 +404,22 @@ export function formatInstallReport(result: InstallResult, projectPath: string):
   report += "│   │   ├── speckit.plan.prompt.md\n";
   report += "│   │   ├── speckit.tasks.prompt.md\n";
   report += "│   │   ├── speckit.implement.prompt.md\n";
-  report += "│   │   ├── speckit.clarify.prompt.md\n";
-  report += "│   │   ├── speckit.validate.prompt.md\n";
-  report += "│   │   ├── speckit.memory.prompt.md\n";
-  report += "│   │   └── speckit.help.prompt.md\n";
+  report += "│   │   └── ...\n";
+  report += "│   ├── agents/                   # Native VS Code agents (1.109+)\n";
+  report += "│   │   ├── speckit-spec.agent.md\n";
+  report += "│   │   ├── speckit-plan.agent.md\n";
+  report += "│   │   ├── speckit-conductor.agent.md\n";
+  report += "│   │   └── ...\n";
+  report += "│   ├── skills/                   # Agent skills (1.109+)\n";
+  report += "│   │   ├── spec-driven-dev/SKILL.md\n";
+  report += "│   │   ├── security-validation/SKILL.md\n";
+  report += "│   │   └── api-design/SKILL.md\n";
   report += "│   └── copilot-instructions.md   # Instructions for Copilot\n";
   report += "├── .spec-kit/\n";
   report += "│   ├── prompts/             # Customizable prompts (read by MCP)\n";
-  report += "│   │   ├── specify.md\n";
-  report += "│   │   ├── plan.md\n";
-  report += "│   │   ├── tasks.md\n";
-  report += "│   │   ├── implement.md\n";
-  report += "│   │   ├── clarify.md\n";
-  report += "│   │   └── validate.md\n";
   report += "│   ├── templates/           # Specification templates\n";
   report += "│   ├── rules/               # Validation rules (security, RGPD)\n";
-  report += "│   │   ├── security-rules.md\n";
-  report += "│   │   └── rgpd-rules.md\n";
-  report += "│   ├── agents/              # Customizable AI agents\n";
-  report += "│   │   ├── SpecAgent.md\n";
-  report += "│   │   ├── PlanAgent.md\n";
-  report += "│   │   ├── GovAgent.md\n";
-  report += "│   │   ├── TestAgent.md\n";
-  report += "│   │   └── _CustomAgent.template.md\n";
+  report += "│   ├── agents/              # Customizable AI agents (system prompts)\n";
   report += "│   └── memory/              # Project context\n";
   report += "│       └── constitution.md  # Project principles\n";
   report += "├── specs/                   # Generated specifications\n";
@@ -384,15 +427,18 @@ export function formatInstallReport(result: InstallResult, projectPath: string):
   report += "```\n\n";
 
   report += "## VS Code Configuration\n\n";
-  report += "Add this to your `.vscode/settings.json` to enable MCP tools:\n\n";
+  report += "Add this to your `.vscode/settings.json` to enable MCP tools and native agents:\n\n";
   report += "```json\n";
   report += result.vsCodeConfig;
   report += "\n```\n\n";
+  report += "> **VS Code 1.109+**: The `chat.agentFilesLocations` and `chat.agentSkillsLocations` settings enable native agent discovery from `.github/agents/` and `.github/skills/`.\n";
+  report += "> Enable `github.copilot.chat.copilotMemory.enabled` for persistent cross-session memory.\n\n";
 
   report += "## Next Steps\n\n";
   report += "1. **Edit your constitution**: `.spec-kit/memory/constitution.md`\n";
   report += "2. **Customize validation rules**: `.spec-kit/rules/`\n";
-  report += "3. **Use slash commands** in Copilot Chat:\n";
+  report += "3. **Try native agents** (VS Code 1.109+): `@SpecKit-Conductor` in chat\n";
+  report += "4. **Use slash commands** in Copilot Chat:\n";
   report += "   - `/speckit.specify` - Create a specification\n";
   report += "   - `/speckit.plan` - Create implementation plan\n";
   report += "   - `/speckit.tasks` - Generate task breakdown\n";
@@ -431,6 +477,8 @@ export async function isSpecKitInstalled(projectPath: string): Promise<{
   hasMemory: boolean;
   hasSpecs: boolean;
   hasSlashCommands: boolean;
+  hasNativeAgents: boolean;
+  hasSkills: boolean;
 }> {
   return {
     hasPrompts: await exists(path.join(projectPath, SPEC_KIT_DIR, PROMPTS_DIR)),
@@ -439,5 +487,7 @@ export async function isSpecKitInstalled(projectPath: string): Promise<{
     hasMemory: await exists(path.join(projectPath, SPEC_KIT_DIR, MEMORY_DIR)),
     hasSpecs: await exists(path.join(projectPath, SPECS_DIR)),
     hasSlashCommands: await exists(path.join(projectPath, GITHUB_DIR, GITHUB_PROMPTS_DIR)),
+    hasNativeAgents: await exists(path.join(projectPath, GITHUB_DIR, GITHUB_AGENTS_DIR)),
+    hasSkills: await exists(path.join(projectPath, GITHUB_DIR, GITHUB_SKILLS_DIR)),
   };
 }

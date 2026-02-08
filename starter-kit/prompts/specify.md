@@ -46,12 +46,34 @@ Fill the template with:
 
 ## 3. Handle Ambiguity
 
-For unclear aspects:
-- **Make informed guesses** based on context and industry standards
-- **Document assumptions** in the Assumptions section
-- **Limit clarifications**: Maximum 3 `[NEEDS CLARIFICATION]` markers for critical decisions only
+**PREFERRED: Use the `askQuestions` tool** to ask structured clarifying questions BEFORE writing the spec. This is more effective than `[NEEDS CLARIFICATION]` markers.
 
-Only use `[NEEDS CLARIFICATION]` when:
+When you encounter ambiguity:
+1. **First**, try to make informed guesses based on context and industry standards
+2. **If critical decisions remain**, use `askQuestions` to ask the user (max 3 questions)
+3. **Batch questions** into a single `askQuestions` call when possible
+4. **Mark your recommendation** on the best option
+
+### askQuestions Usage
+
+```json
+{
+  "questions": [{
+    "header": "Scope",
+    "question": "Should the notification system support real-time push notifications or only in-app notifications?",
+    "options": [
+      { "label": "Real-time push + in-app", "description": "WebSocket/SSE for instant delivery", "recommended": true },
+      { "label": "In-app only", "description": "Polling-based, simpler architecture" },
+      { "label": "Email + in-app", "description": "Async notifications via email" }
+    ]
+  }]
+}
+```
+
+### Fallback: Markers
+
+Only use `[NEEDS CLARIFICATION]` when `askQuestions` is not available:
+- Maximum 3 markers for critical decisions only
 - The choice significantly impacts feature scope
 - Multiple reasonable interpretations exist
 - No reasonable default exists

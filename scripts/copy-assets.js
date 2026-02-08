@@ -19,8 +19,10 @@ const assets = [
   'starter-kit/memory',
   'starter-kit/rules',
   'starter-kit/workflows',
-  'starter-kit/agents',           // Customizable agent definitions
-  'starter-kit/github-prompts',  // Slash commands for GitHub Copilot
+  'starter-kit/agents',           // Customizable agent definitions (system prompts)
+  'starter-kit/github-prompts',   // Slash commands for GitHub Copilot
+  'starter-kit/github-agents',    // Native VS Code agents (.agent.md) - VS Code 1.109+
+  'starter-kit/github-skills',    // Agent skills (SKILL.md) - VS Code 1.109+
 ];
 
 // Single files to verify
